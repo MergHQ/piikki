@@ -1,0 +1,70 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: piikki-cache-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: piikki-cache-api
+  template:
+    metadata:
+      labels:
+        app: piikki-cache-api
+    spec:
+      containers:
+        - name: piikki-cache-api
+          image: registry.digitalocean.com/merg-registry/piikki-cache-api:latest
+          imagePullPolicy: "Always"
+          ports:
+            - containerPort: 4000
+              protocol: "TCP"
+          env:
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: piikki-cache-api-secrets
+                  key: DB_URL
+            - name: DATA_SYNC_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: piikki-cache-api-secrets
+                  key: DATA_SYNC_TOKEN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: piikki-cache-api
+spec:
+  selector:
+    app: piikki-cache-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4000
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: piikki-cache-sync
+spec:
+  schedule: "*/5 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: piikki-cache-sync-task
+              image: buildpack-deps:curl
+              env:
+                - name: DATA_SYNC_TOKEN
+                  valueFrom:
+                    secretKeyRef:
+                      name: piikki-cache-api-secrets
+                      key: DATA_SYNC_TOKEN
+              args:
+                - /bin/sh
+                - -ec
+                - "curl -X PUT http://piikki-cache-api/syncData -H 'x-token: ${DATA_SYNC_TOKEN}'"
+          restartPolicy: OnFailure
