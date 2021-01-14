@@ -4,17 +4,17 @@ export default function memoize<A>(
   fn: (...xs: any[]) => A,
   ttl: number
 ): (...xs: any[]) => A {
-  const cache = new Map();
+  const cache = new Map()
   return (...xs: any[]): A => {
-    const args = JSON.stringify(xs);
+    const args = JSON.stringify(xs)
 
     if (cache.has(args)) {
-      const cached = cache.get(args)!;
-      if (Date.now() - cached.requested < ttl) return cached.result;
+      const cached = cache.get(args)!
+      if (Date.now() - cached.requested < ttl) return cached.result
     }
 
-    const result = fn.apply(null, xs);
-    cache.set(args, { requested: Date.now(), result });
-    return result;
-  };
+    const result = fn.apply(null, xs)
+    cache.set(args, { requested: Date.now(), result })
+    return result
+  }
 }
