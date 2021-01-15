@@ -1,6 +1,6 @@
 import React from 'react'
 import { Summary } from '../../shared/area-administration'
-import AdministrationPieChart from '../components/AdministrationPieChart'
+import AdministrationPieChart from '../components/CountryPieChart'
 import AreasPieChart from '../components/AreasPieChart'
 import Footer from '../components/Footer'
 import { getSummary } from '../service/piikki'

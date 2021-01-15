@@ -31,7 +31,14 @@ export default ({ summary, totalVaccinatees }: Props) => {
     <div className="data-container">
       <h2 className="data-container__title">Current vaccine situation</h2>
       <V.VictoryPie
-        labelComponent={<V.VictoryTooltip width={2} />}
+        containerComponent={
+          <V.VictoryContainer
+            style={{
+              touchAction: 'auto',
+            }}
+          />
+        }
+        labelComponent={<V.VictoryTooltip pointerOrientation="bottom" />}
         animate={{
           duration: 0.2,
           easing: 'exp',
