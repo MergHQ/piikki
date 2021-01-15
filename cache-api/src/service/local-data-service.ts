@@ -4,26 +4,9 @@ import { pipe } from 'fp-ts/function'
 import { Administration, Area } from '../sync/data-sync'
 import * as R from 'ramda'
 import memoize from '../util/memoize'
+import { AreaAdministration, Summary } from '../../../shared/area-administration'
 
 type QueryResult = Area & Omit<Administration, 'id'>
-
-type AreaAdministration = {
-  areaId: string
-  areaName: string
-  totalShots: number
-  shotHistory: {
-    areaId: string
-    date: Date
-    shots: number
-  }[]
-}
-
-type Summary = {
-  totalShots: number
-  areas: Array<
-    Pick<AreaAdministration, 'areaId' | 'areaName'> & { areaTotalShots: number }
-  >
-}
 
 const cacheTTL = 60 * 1000 * 15 // 15 mins
 
