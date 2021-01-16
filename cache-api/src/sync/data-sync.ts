@@ -1,4 +1,4 @@
-import { getClient } from '../db'
+import { createTables, getClient } from '../db'
 import { v4 } from 'uuid'
 import * as T from 'fp-ts/TaskEither'
 import { HsAreaAdministrations, ShotHistory } from '../service/hs-api-service'
@@ -28,10 +28,31 @@ const passthorugh = <T>(te: T.TaskEither<string, void>) => (
     T.map(() => passthrough)
   )
 
-const truncate = () => {
+const createLoadTables = T.tryCatch(() => createTables(true), passError('DataSyncError'))
+
+const dropOldTables = () => {
   const queryP = getClient().then(async client => {
     try {
-      await client.query('truncate area cascade')
+      await client.query('BEGIN')
+      await client.query('drop table administration')
+      await client.query('drop table area')
+      await client.query('COMMIT')
+    } catch (e) {
+      await client.query('ROLLBACK')
+      throw e
+    } finally {
+      client.release()
+    }
+  })
+
+  return T.tryCatch(() => queryP, passError('DataSyncError'))
+}
+
+const renameTables = () => {
+  const queryP = getClient().then(async client => {
+    try {
+      await client.query('alter table administration_load rename to administration')
+      await client.query('alter table area_load rename to area')
     } catch (e) {
       throw e
     } finally {
@@ -53,7 +74,7 @@ const insertAreas = (areas: Pick<HsAreaAdministrations, 'area' | 'totalShots'>[]
       }))
       await Promise.all(
         dbAreas.map(a =>
-          client.query('insert into area values ($1, $2, $3)', [
+          client.query('insert into area_load values ($1, $2, $3)', [
             a.id,
             a.areaName,
             a.totalShots,
@@ -93,7 +114,7 @@ const insertAdministrations = (dbAreas: Area[], shotHistory: ShotHistory[]) => {
 
       await Promise.all(
         compact(administrations).map(a =>
-          client.query('insert into administration values ($1, $2, $3, $4)', [
+          client.query('insert into administration_load values ($1, $2, $3, $4)', [
             a.id,
             a.areaId,
             a.date,
@@ -117,12 +138,14 @@ export const startDataSync = (areaAdministrations: HsAreaAdministrations[]) =>
   pipe(
     areaAdministrations,
     map(({ area, totalShots }) => ({ area, totalShots })),
-    passthorugh(truncate()),
+    passthorugh(createLoadTables),
     T.chain(insertAreas),
     T.chain(areas =>
       insertAdministrations(
         areas,
         areaAdministrations.flatMap(({ shotHistory }) => shotHistory)
       )
-    )
+    ),
+    T.chain(() => dropOldTables()),
+    T.chain(() => renameTables())
   )

@@ -8,6 +8,7 @@ import { getAdministrations } from './service/hs-api-service'
 import * as morgan from 'morgan'
 import * as cors from 'cors'
 import { doTaskEither } from './errors'
+import { createTables } from './db'
 
 const server = express()
 
@@ -33,4 +34,6 @@ server.put(
 
 const port = process.env.PORT || 4000
 
-server.listen(port, () => console.log('Server listening on', port))
+createTables().then(() =>
+  server.listen(port, () => console.log('Server listening on', port))
+)
