@@ -75,7 +75,7 @@ kind: CronJob
 metadata:
   name: piikki-tg-bot
 spec:
-  schedule: '0 8 * * *'
+  schedule: '15 8 * * *'
   jobTemplate:
     spec:
       template:
