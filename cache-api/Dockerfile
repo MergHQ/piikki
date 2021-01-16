@@ -1,11 +1,12 @@
 FROM node:14-alpine
 
-WORKDIR /app
+WORKDIR /app/cache-api
 
-COPY ./src /app/src
-COPY package.json /app/package.json
-COPY tsconfig.json /app/tsconfig.json
-COPY yarn.lock /app/yarn.lock
+COPY ./cache-api/src /app/cache-api/src
+COPY ./cache-api/package.json /app/cache-api/package.json
+COPY ./cache-api/tsconfig.json /app/cache-api/tsconfig.json
+COPY ./cache-api/yarn.lock /app/cache-api/yarn.lock
+COPY ./shared /app/shared
 
 RUN yarn install
 RUN yarn build

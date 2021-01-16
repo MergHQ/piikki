@@ -5,8 +5,13 @@ import { startDataSync } from './sync/data-sync'
 import { pipe } from 'fp-ts/lib/function'
 import { getLocalAdministrations, getLocalSummary } from './service/local-data-service'
 import { getAdministrations } from './service/hs-api-service'
+import * as morgan from 'morgan'
+import * as cors from 'cors'
 
 const server = express()
+
+server.use(morgan('common'))
+server.use(cors())
 
 const checkDataSyncToken = (
   req: express.Request,

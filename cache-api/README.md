@@ -14,5 +14,5 @@ This app caches finnish covid-19 vaccine data to its own database and serverse t
 
 ### GET
 
-- https://piikki-api.juiciness.io/administrations
-- https://piikki-api.juiciness.io/summary
+- https://piikki-api.lab.juiciness.io/administrations
+- https://piikki-api.lab.juiciness.io/summary
