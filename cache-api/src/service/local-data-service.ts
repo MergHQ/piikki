@@ -5,6 +5,7 @@ import { Administration, Area } from '../sync/data-sync'
 import * as R from 'ramda'
 import memoize from '../util/memoize'
 import { AreaAdministration, Summary } from '../../../shared/area-administration'
+import { ErrorName, passError } from '../errors'
 
 type QueryResult = Area & Omit<Administration, 'id'>
 
@@ -37,9 +38,9 @@ const cachedAdministrationsQuery = memoize(
   cacheTTL
 )
 
-const queryAdministrations = T.tryCatch(
+const queryAdministrations = T.tryCatch<ErrorName, QueryResult[]>(
   () => cachedAdministrationsQuery(),
-  () => 'Could not get administrations'
+  passError('DbError')
 )
 
 const parseQueryResult = R.pipe(

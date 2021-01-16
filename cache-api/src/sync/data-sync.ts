@@ -5,6 +5,7 @@ import { HsAreaAdministrations, ShotHistory } from '../service/hs-api-service'
 import { findFirst, compact, map } from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/lib/function'
+import { passError } from '../errors'
 
 export type Area = {
   id: string
@@ -38,10 +39,7 @@ const truncate = () => {
     }
   })
 
-  return T.tryCatch(
-    () => queryP,
-    () => 'Could not truncate tables'
-  )
+  return T.tryCatch(() => queryP, passError('DataSyncError'))
 }
 
 const insertAreas = (areas: Pick<HsAreaAdministrations, 'area' | 'totalShots'>[]) => {
@@ -72,10 +70,7 @@ const insertAreas = (areas: Pick<HsAreaAdministrations, 'area' | 'totalShots'>[]
     }
   })
 
-  return T.tryCatch(
-    () => queryP,
-    () => 'Could not insert areas'
-  )
+  return T.tryCatch(() => queryP, passError('DataSyncError'))
 }
 
 const insertAdministrations = (dbAreas: Area[], shotHistory: ShotHistory[]) => {
@@ -115,10 +110,7 @@ const insertAdministrations = (dbAreas: Area[], shotHistory: ShotHistory[]) => {
     }
   })
 
-  return T.tryCatch(
-    () => queryP,
-    () => 'Could not insert administrations'
-  )
+  return T.tryCatch(() => queryP, passError('DataSyncError'))
 }
 
 export const startDataSync = (areaAdministrations: HsAreaAdministrations[]) =>

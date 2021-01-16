@@ -7,6 +7,7 @@ import { getLocalAdministrations, getLocalSummary } from './service/local-data-s
 import { getAdministrations } from './service/hs-api-service'
 import * as morgan from 'morgan'
 import * as cors from 'cors'
+import { doTaskEither } from './errors'
 
 const server = express()
 
@@ -22,36 +23,10 @@ const checkDataSyncToken = (
     ? next()
     : res.status(401).json({ message: 'unauthorized' })
 
-server.get('/administrations/summary', (_, res) =>
-  getLocalSummary().then(
-    E.fold(
-      error => res.status(500).json({ message: error }),
-      summary => res.json(summary)
-    )
-  )
-)
-
-server.get('/administrations', (_, res) =>
-  getLocalAdministrations().then(
-    E.fold(
-      error => res.status(500).json({ message: error }),
-      admstr => res.json(admstr)
-    )
-  )
-)
-
+server.get('/administrations/summary', doTaskEither(getLocalSummary))
+server.get('/administrations', doTaskEither(getLocalAdministrations))
 server.put('/syncData', checkDataSyncToken, (_, res) =>
-  pipe(
-    getAdministrations,
-    T.chain(admstr => startDataSync(admstr)),
-    task =>
-      task().then(
-        E.fold(
-          error => res.status(500).json({ message: error }),
-          () => res.json({ message: 'data sync done' })
-        )
-      )
-  )
+  doTaskEither(T.chain(startDataSync)(getAdministrations))
 )
 
 const port = process.env.PORT || 4000

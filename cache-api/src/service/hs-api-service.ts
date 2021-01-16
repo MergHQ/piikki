@@ -4,6 +4,7 @@ import * as T from 'fp-ts/TaskEither'
 import * as R from 'ramda'
 import * as O from 'fp-ts/Option'
 import { lookup } from 'fp-ts/lib/Array'
+import { passError } from '../errors'
 
 const baseURL = 'https://w3qa5ydb4l.execute-api.eu-west-1.amazonaws.com/prod'
 
@@ -57,7 +58,7 @@ const doRequest = () =>
       hsClient
         .get('/finnishVaccinationData')
         .then(({ data }) => data as HsApiResponseItem[]),
-    () => 'Cannot fetch data from HS servers'
+    passError('HsApiError')
   )
 
 export const getAdministrations = pipe(doRequest(), T.map(parseResponse))
