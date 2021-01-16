@@ -50,6 +50,8 @@ metadata:
   name: piikki-cache-sync
 spec:
   schedule: '0 * * * *'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
@@ -76,6 +78,8 @@ metadata:
   name: piikki-tg-bot
 spec:
   schedule: '15 8 * * *'
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
   jobTemplate:
     spec:
       template:
