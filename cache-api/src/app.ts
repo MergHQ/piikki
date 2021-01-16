@@ -25,8 +25,10 @@ const checkDataSyncToken = (
 
 server.get('/administrations/summary', doTaskEither(getLocalSummary))
 server.get('/administrations', doTaskEither(getLocalAdministrations))
-server.put('/syncData', checkDataSyncToken, (_, res) =>
-  doTaskEither(T.chain(startDataSync)(getAdministrations))
+server.put(
+  '/syncData',
+  checkDataSyncToken,
+  doTaskEither(T.chain(startDataSync)(getAdministrations), 'data sync done')
 )
 
 const port = process.env.PORT || 4000

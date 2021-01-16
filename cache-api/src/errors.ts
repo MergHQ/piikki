@@ -35,10 +35,10 @@ export const passError = (name: ErrorName) => (e: Error): ErrorName => {
   return name
 }
 
-export const doTaskEither = <T>(task: TaskEither<ErrorName, T>) => (
-  _: Request,
-  res: Response
-): void => {
+export const doTaskEither = <T>(
+  task: TaskEither<ErrorName, T>,
+  successMessage?: string
+) => (_: Request, res: Response): void => {
   task().then(
     fold(
       eName =>
@@ -50,7 +50,7 @@ export const doTaskEither = <T>(task: TaskEither<ErrorName, T>) => (
             res.status(status).json({ message })
           }
         ),
-      successfulResult => res.json(successfulResult)
+      successfulResult => res.json(successfulResult || { message: successMessage })
     )
   )
 }
