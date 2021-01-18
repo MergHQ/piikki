@@ -1,49 +1,29 @@
-import React, { useState, useEffect } from 'react'
-import * as V from 'victory'
+import React from 'react'
 import { Summary } from '../../shared/area-administration'
+import { ChartData } from 'chart.js'
+import { Doughnut } from '@reactchartjs/react-chart.js'
+import chartColors from './chartColors'
 
 type Props = {
   summary: Summary
 }
 
-const getInitialData = (summary: Summary) => {
-  const items = summary.areas.length
-  return new Array(items).fill(summary.totalShots / items)
-}
-
 export default ({ summary }: Props) => {
-  const [pieData, setPieData] = useState<any[]>(getInitialData(summary))
-
-  useEffect(() => {
-    setPieData(
-      summary.areas.map(({ areaName, areaTotalShots }) => ({
-        x: areaName,
-        y: areaTotalShots,
-        label: `${areaName} ${areaTotalShots}`,
-      }))
-    )
-  }, [])
+  const data: ChartData = {
+    labels: summary.areas.map(({ areaName }) => areaName),
+    datasets: [
+      {
+        data: summary.areas.map(({ areaTotalShots }) => areaTotalShots),
+        backgroundColor: chartColors,
+        borderWidth: 0,
+      },
+    ],
+  }
 
   return (
     <div className="data-container">
       <h2 className="data-container__title">Vaccinated per area</h2>
-      <V.VictoryPie
-        containerComponent={
-          <V.VictoryContainer
-            style={{
-              touchAction: 'auto',
-            }}
-          />
-        }
-        labelComponent={<V.VictoryTooltip orientation="bottom" />}
-        animate={{
-          duration: 0.2,
-          easing: 'exp',
-        }}
-        colorScale="qualitative"
-        data={pieData}
-        innerRadius={100}
-      />
+      <Doughnut data={data} />
     </div>
   )
 }

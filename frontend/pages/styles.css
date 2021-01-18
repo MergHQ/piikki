@@ -22,6 +22,7 @@ body {
   display: flex;
   align-items: center;
   flex-direction: column;
+  padding-bottom: 30px;
 }
 
 .data-container__title {

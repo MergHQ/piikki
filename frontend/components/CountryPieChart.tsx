@@ -1,52 +1,30 @@
 import React, { useState, useEffect } from 'react'
-import * as V from 'victory'
 import { Summary } from '../../shared/area-administration'
+import { Doughnut } from '@reactchartjs/react-chart.js'
+import { ChartData } from 'chart.js'
+import chartColors from './chartColors'
 
 type Props = {
   totalVaccinatees: number
   summary: Summary
 }
 
-const initialData = [{ y: 0 }, { y: 5000000 }]
-
 export default ({ summary, totalVaccinatees }: Props) => {
-  const [pieData, setPieData] = useState<any[]>(initialData)
-
-  useEffect(() => {
-    setPieData([
+  const data: ChartData = {
+    labels: ['Vaccinated', 'Not vaccinated'],
+    datasets: [
       {
-        x: 'Vaccinated now',
-        y: summary.totalShots,
-        label: `Vaccinated ${summary.totalShots}`,
+        data: [summary.totalShots, totalVaccinatees - summary.totalShots],
+        backgroundColor: ['rgba(54, 162, 235, 0.5)', ...chartColors],
+        borderWidth: 0,
       },
-      {
-        x: 'To be vaccinated',
-        y: totalVaccinatees - summary.totalShots,
-        label: `Not vaccinated ${totalVaccinatees - summary.totalShots}`,
-      },
-    ])
-  }, [])
+    ],
+  }
 
   return (
     <div className="data-container">
       <h2 className="data-container__title">Current vaccine situation</h2>
-      <V.VictoryPie
-        containerComponent={
-          <V.VictoryContainer
-            style={{
-              touchAction: 'auto',
-            }}
-          />
-        }
-        labelComponent={<V.VictoryTooltip pointerOrientation="bottom" />}
-        animate={{
-          duration: 0.2,
-          easing: 'exp',
-        }}
-        colorScale="qualitative"
-        data={pieData}
-        innerRadius={100}
-      />
+      <Doughnut data={data} />
     </div>
   )
 }
