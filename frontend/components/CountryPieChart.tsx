@@ -24,7 +24,7 @@ export default ({ summary, totalVaccinatees }: Props) => {
   return (
     <div className="data-container">
       <h2 className="data-container__title">Current vaccine situation</h2>
-      <Doughnut data={data} />
+      <Doughnut type="doughnut" data={data} />
     </div>
   )
 }

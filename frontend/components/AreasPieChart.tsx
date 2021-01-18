@@ -23,7 +23,7 @@ export default ({ summary }: Props) => {
   return (
     <div className="data-container">
       <h2 className="data-container__title">Vaccinated per area</h2>
-      <Doughnut data={data} />
+      <Doughnut type="doughnut" data={data} />
     </div>
   )
 }

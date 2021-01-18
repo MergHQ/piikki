@@ -47,7 +47,7 @@ export default ({ administrations }: Props) => {
   return (
     <div className="data-container">
       <h2 className="data-container__title">Daily vaccinations administered per area</h2>
-      <Bar data={data} options={options} />
+      <Bar type="bar" data={data} options={options} />
     </div>
   )
 }
