@@ -7,23 +7,29 @@ import { getAdministrations, getSummary } from '../service/piikki'
 import DailyStatsChart from '../components/DailyStatsChart'
 import Head from 'next/head'
 
-
 type AppProps = {
   totalVaccinatees: number
   summary: Summary
   administrations: AreaAdministration[]
 }
 
-const head =
+const head = (
   <Head>
     <title>COVID-19 vaccination status in Finland</title>
     <meta name="viewport" content="initial-scale=1.0, width=device-width" />
     <meta httpEquiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="description" content="View charts of the current COVID-19 vaccination status in Finland."/>
+    <meta
+      name="description"
+      content="View charts of the current COVID-19 vaccination status in Finland."
+    />
     <meta property="og:title" content="COVID-19 vaccination status in Finland" />
-    <meta property="og:description" content="View charts of the current COVID-19 vaccination status in Finland." />
+    <meta
+      property="og:description"
+      content="View charts of the current COVID-19 vaccination status in Finland."
+    />
     <meta property="og:type" content="website" />
   </Head>
+)
 
 export default ({ summary, totalVaccinatees, administrations }: AppProps) => (
   <>
@@ -42,7 +48,7 @@ export const getServerSideProps = async () =>
   Promise.all([getSummary(), getAdministrations()]).then(
     ([summary, administrations]) => ({
       props: {
-        totalVaccinatees: 3500000,
+        totalVaccinatees: 5584105,
         summary,
         administrations,
       } as AppProps,
