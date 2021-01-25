@@ -26,12 +26,17 @@ export type HsAreaAdministrations = {
   shotHistory: ShotHistory[]
 }
 
+export const parseInvalidTimestamp = (date: string) => {
+  const [beginning, end] = R.splitAt(10, date.split('')).map(p => p.join(''))
+  return `${beginning}T${end}`
+}
+
 const parseResponse = R.pipe(
   (v: HsApiResponseItem[]) => v.filter(a => a.area !== 'Finland'),
   R.groupBy(a => a.area),
   R.mapObjIndexed(list => {
     const shotHistory = list.map((item, idx, l) => ({
-      date: item.date,
+      date: item.date.includes('T') ? item.date : parseInvalidTimestamp(item.date),
       area: item.area,
       shots:
         item.shots -
@@ -41,7 +46,6 @@ const parseResponse = R.pipe(
           O.getOrElse(() => 0)
         ),
     }))
-
     return {
       area: list[0].area,
       totalShots: R.sum(shotHistory.map(i => i.shots)),

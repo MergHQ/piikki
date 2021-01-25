@@ -21,7 +21,7 @@ export const createTables = (load?: boolean) =>
         date timestamp not null,
         shots int not null,
         constraint fk_area
-          foreign key ("areaId") references area_load(id)
+          foreign key ("areaId") references area${load ? '_load' : ''}(id)
       );
       `)
     } catch (e) {
