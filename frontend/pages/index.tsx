@@ -6,7 +6,6 @@ import Footer from '../components/Footer'
 import { getAdministrations, getSummary } from '../service/piikki'
 import DailyStatsChart from '../components/DailyStatsChart'
 import Head from 'next/head'
-import { GetStaticProps } from 'next'
 
 type AppProps = {
   totalVaccinatees: number
@@ -45,7 +44,7 @@ export default ({ summary, totalVaccinatees, administrations }: AppProps) => (
   </>
 )
 
-export const getStaticProps: GetStaticProps = async () =>
+export const getServerSideProps = async () =>
   Promise.all([getSummary(), getAdministrations()]).then(
     ([summary, administrations]) => ({
       props: {
@@ -53,6 +52,5 @@ export const getStaticProps: GetStaticProps = async () =>
         summary,
         administrations,
       } as AppProps,
-      revalidate: 600000,
     })
   )
