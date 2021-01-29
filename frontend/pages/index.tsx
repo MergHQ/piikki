@@ -12,7 +12,6 @@ type AppProps = {
   totalVaccinatees: number
   summary: Summary
   administrations: AreaAdministration[]
-  revalidatedAt: string
 }
 
 const head = (
@@ -33,7 +32,7 @@ const head = (
   </Head>
 )
 
-export default ({ summary, totalVaccinatees, administrations, revalidatedAt }: AppProps) => (
+export default ({ summary, totalVaccinatees, administrations }: AppProps) => (
   <>
     {head}
     <div className="container">
@@ -42,7 +41,7 @@ export default ({ summary, totalVaccinatees, administrations, revalidatedAt }: A
       <AreasPieChart summary={summary} />
       <DailyStatsChart administrations={administrations} />
     </div>
-    <Footer revalidatedAt={revalidatedAt} />
+    <Footer></Footer>
   </>
 )
 
@@ -53,8 +52,7 @@ export const getStaticProps: GetStaticProps = async () =>
         totalVaccinatees: 5584105,
         summary,
         administrations,
-        revalidatedAt: new Date().toJSON()
       } as AppProps,
-      revalidate: 600,
+      revalidate: 600000,
     })
   )
