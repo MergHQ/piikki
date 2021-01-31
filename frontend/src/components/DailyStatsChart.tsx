@@ -1,13 +1,14 @@
-import React from 'react'
-import { AreaAdministration } from '../../shared/area-administration'
+import { h } from 'harmaja'
+import { AreaAdministration } from '../../../shared/area-administration'
 import { ChartData } from 'chart.js'
-import { Bar } from '@reactchartjs/react-chart.js'
-import chartColors, { getWithIdx } from './chartColors'
+import { getWithIdx } from './chartColors'
 import { startOfDay, format } from 'date-fns'
 import * as R from 'ramda'
+import { Bar } from '../util/chart-js-wrapper'
+import * as L from 'lonna'
 
 type Props = {
-  administrations: AreaAdministration[]
+  administrations: L.Property<AreaAdministration[]>
 }
 
 const options = {
@@ -28,13 +29,14 @@ const options = {
   },
 }
 
-export default ({ administrations }: Props) => {
+const toChartData = (administrations: AreaAdministration[]): ChartData => {
   const labels = R.pipe(
     (x0: AreaAdministration[]) => x0.flatMap(({ shotHistory }) => shotHistory),
     R.map(({ date }) => format(startOfDay(new Date(date)), 'd.M.yyyy')),
     R.uniq
   )
-  const data: ChartData = {
+
+  return {
     labels: labels(administrations),
     datasets: administrations.map(({ shotHistory, areaName }, i) => ({
       label: areaName,
@@ -43,11 +45,14 @@ export default ({ administrations }: Props) => {
       borderWidth: 0,
     })),
   }
-
-  return (
-    <div className="data-container">
-      <h2 className="data-container__title">Daily vaccinations administered per area</h2>
-      <Bar type="bar" data={data} options={options} />
-    </div>
-  )
 }
+
+export default ({ administrations }: Props) => (
+  <div className="data-container">
+    <h2 className="data-container__title">Daily vaccinations administered per area</h2>
+    {administrations.pipe(
+      L.map(toChartData),
+      L.map(data => <Bar data={data} options={options} />)
+    )}
+  </div>
+)

@@ -1,8 +1,8 @@
-import React from 'react'
-import styles from './Footer.module.css'
+import { h } from 'harmaja'
+import './footer.css'
 
 export default () => (
-  <footer className={styles.footer}>
+  <footer className="footer">
     <div className="footer__left">
       <p>Hugo Holmqvist 2021</p>
     </div>

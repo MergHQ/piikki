@@ -29,6 +29,14 @@ body {
   font-size: 32px;
 }
 
+.doughnut-chart-container {
+  max-width: 400px;
+}
+
+.bar-chart-container {
+  max-width: 600px;
+}
+
 @media only screen and (max-width: 600px) {
   .data-container__title {
     font-size: 16px;
@@ -36,5 +44,12 @@ body {
 
   h1 {
     font-size: 20px;
+  }
+  .doughnut-chart-container {
+    max-width: 300px;
+  }
+
+  .bar-chart-container {
+    max-width: 300px;
   }
 }

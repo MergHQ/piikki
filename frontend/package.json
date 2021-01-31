@@ -5,25 +5,23 @@
   "version": "1.0.0",
   "main": "pathToMain",
   "dependencies": {
-    "@reactchartjs/react-chart.js": "^1.0.0-rc.3",
     "@types/chart.js": "^2.9.29",
     "@types/ramda": "^0.27.34",
-    "@types/react": "^17.0.0",
     "axios": "^0.21.1",
     "chart.js": "^2.9.4",
     "date-fns": "^2.16.1",
-    "next": "^10.0.5",
-    "ramda": "^0.27.1",
-    "react": "^17.0.1",
-    "react-dom": "^17.0.1"
+    "harmaja": "^0.17.0",
+    "lonna": "^0.8.0",
+    "ramda": "^0.27.1"
   },
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "parcel ./public/index.html",
+    "build": "parcel build --no-minify ./public/index.html",
     "start": "next start"
   },
   "devDependencies": {
     "@types/node": "^14.14.21",
+    "parcel-bundler": "^1.12.4",
     "typescript": "^4.1.3"
   }
 }
