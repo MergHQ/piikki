@@ -1,0 +1,12 @@
+.week-selector-controls {
+  display: flex;
+  margin: 10px;
+}
+
+.week-selector__button {
+  margin: 5px;
+  width: 50px;
+  background: transparent;
+  border: none;
+  font-size: 20px;
+}
