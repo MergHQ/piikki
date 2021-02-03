@@ -4,12 +4,14 @@ import { ChartData } from 'chart.js'
 import chartColors from './chartColors'
 import { Doughnut } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
+import * as FS from '../util/fetch-status'
+import LoadingSpinner from './LoadingSpinner'
 
 type Props = {
-  summary: L.Property<Summary>
+  summary: L.Property<FS.FetchStatus<Summary>>
 }
 
-const toChartData = (summary: Summary): ChartData => ({
+const toChartData = FS.map<Summary, ChartData>(summary => ({
   labels: summary.areas.map(({ areaName }) => areaName),
   datasets: [
     {
@@ -18,7 +20,7 @@ const toChartData = (summary: Summary): ChartData => ({
       borderWidth: 0,
     },
   ],
-})
+}))
 
 export default ({ summary }: Props) => {
   return (
@@ -26,7 +28,13 @@ export default ({ summary }: Props) => {
       <h2 className="data-container__title">Vaccinated per area</h2>
       {summary.pipe(
         L.map(toChartData),
-        L.map(data => <Doughnut data={data} />)
+        L.map(
+          FS.fold(
+            () => <LoadingSpinner />,
+            () => <p>Error loading data.</p>,
+            data => <Doughnut data={data} />
+          )
+        )
       )}
     </div>
   )

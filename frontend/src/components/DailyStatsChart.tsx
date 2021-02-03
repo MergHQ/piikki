@@ -7,13 +7,15 @@ import * as R from 'ramda'
 import { Bar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
 import './week-selector.css'
+import * as FS from '../util/fetch-status'
+import LoadingSpinner from './LoadingSpinner'
 
 type Props = {
-  administrations: L.Property<AreaAdministration[]>
+  administrations: L.Property<FS.FetchStatus<AreaAdministration[]>>
 }
 
 type Combined = {
-  administrations: AreaAdministration[]
+  administrationsStatus: FS.FetchStatus<AreaAdministration[]>
   selectedWeek: Date
 }
 
@@ -35,7 +37,7 @@ const options = {
   },
 }
 
-const toChartData = (administrations: AreaAdministration[]): ChartData => {
+const toChartData = FS.map<AreaAdministration[], ChartData>(administrations => {
   const labels = R.pipe(
     (x0: AreaAdministration[]) => x0.flatMap(({ shotHistory }) => shotHistory),
     R.map(({ date }) => format(startOfDay(new Date(date)), 'd.M.yyyy')),
@@ -51,18 +53,20 @@ const toChartData = (administrations: AreaAdministration[]): ChartData => {
       borderWidth: 0,
     })),
   }
-}
+})
 
 const applyWeekFilter = ({
-  administrations,
+  administrationsStatus,
   selectedWeek,
-}: Combined): AreaAdministration[] =>
-  administrations.map(({ shotHistory, ...rest }) => ({
-    ...rest,
-    shotHistory: shotHistory.filter(({ date }) =>
-      isSameWeek(selectedWeek, new Date(date))
-    ),
-  }))
+}: Combined): FS.FetchStatus<AreaAdministration[]> =>
+  FS.map((administrations: AreaAdministration[]) =>
+    administrations.map(({ shotHistory, ...rest }) => ({
+      ...rest,
+      shotHistory: shotHistory.filter(({ date }) =>
+        isSameWeek(selectedWeek, new Date(date))
+      ),
+    }))
+  )(administrationsStatus)
 
 const isWeekDisabled = (d: Date) => isAfter(d, startOfWeek(new Date()))
 
@@ -111,12 +115,18 @@ export default ({ administrations }: Props) => (
     <h2 className="data-container__title">Daily vaccinations administered per area</h2>
     <WeekSelector />
     {L.combineTemplate({
-      administrations,
+      administrationsStatus: administrations,
       selectedWeek,
     }).pipe(
-      L.map<Combined, AreaAdministration[]>(applyWeekFilter),
+      L.map<Combined, FS.FetchStatus<AreaAdministration[]>>(applyWeekFilter),
       L.map(toChartData),
-      L.map(data => <Bar data={data} options={options} />)
+      L.map(
+        FS.fold(
+          () => <LoadingSpinner />,
+          () => <p>Error loading data.</p>,
+          data => <Bar data={data} options={options} />
+        )
+      )
     )}
   </div>
 )
