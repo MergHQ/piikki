@@ -1,11 +1,10 @@
-import { getClient, withConnection } from '../db'
+import { withConnection } from '../db'
 import * as T from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/function'
 import { Administration, Area } from '../sync/data-sync'
 import * as R from 'ramda'
 import memoize from '../util/memoize'
 import { AreaAdministration, Summary } from '../../../shared/area-administration'
-import { ErrorName, passError } from '../errors'
 
 type QueryResult = Area & Omit<Administration, 'id'>
 

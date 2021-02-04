@@ -1,8 +1,6 @@
 import * as express from 'express'
-import * as E from 'fp-ts/Either'
 import * as T from 'fp-ts/TaskEither'
 import { startDataSync } from './sync/data-sync'
-import { pipe } from 'fp-ts/lib/function'
 import { getLocalAdministrations, getLocalSummary } from './service/local-data-service'
 import { getAdministrations } from './service/thl-data-service'
 import * as morgan from 'morgan'

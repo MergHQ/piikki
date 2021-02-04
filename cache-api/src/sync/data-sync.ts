@@ -1,4 +1,4 @@
-import { createTables, getClient, transaction } from '../db'
+import { createTables, transaction } from '../db'
 import { v4 } from 'uuid'
 import * as T from 'fp-ts/TaskEither'
 import { ThlAreaAdministrations, ShotHistory } from '../service/thl-data-service'

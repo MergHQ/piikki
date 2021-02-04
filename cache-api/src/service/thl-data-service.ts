@@ -3,7 +3,6 @@ import { pipe } from 'fp-ts/lib/function'
 import * as T from 'fp-ts/TaskEither'
 import * as R from 'ramda'
 import { passError } from '../errors'
-import hcdMap from '../util/hcd-map'
 const jsonstat = require('jsonstat-toolkit')
 
 const baseURL =
