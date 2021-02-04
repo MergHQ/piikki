@@ -28,7 +28,7 @@ const ChartComponent = ({ data, options, type }: ChartComponentProps) => {
 
   return (
     <div className={`${type}-chart-container`}>
-      <canvas ref={ref => canvas.set(ref)} width="800" height="800"></canvas>
+      <canvas ref={ref => canvas.set(ref)} width="800" height="1000"></canvas>
     </div>
   )
 }
