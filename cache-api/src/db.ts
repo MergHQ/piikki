@@ -1,4 +1,6 @@
-import { Pool } from 'pg'
+import { taskEither as T } from 'fp-ts'
+import { Pool, PoolClient, QueryResult } from 'pg'
+import { ErrorName, passError } from './errors'
 
 const pool = new Pool({
   connectionString: process.env.DB_URL,
@@ -30,5 +32,41 @@ export const createTables = (load?: boolean) =>
       con.release()
     }
   })
+
+export const withConnection = <T extends any[], R>(error: ErrorName) => (
+  fn: (client: PoolClient, ...args: T) => Promise<QueryResult>
+): ((...args: T) => T.TaskEither<ErrorName, R[]>) => (
+  ...args
+): T.TaskEither<ErrorName, R[]> => {
+  const queryP = pool.connect().then(connection =>
+    fn(connection, ...args)
+      .then(res => res.rows as R[])
+      .finally(() => connection.release())
+  )
+
+  return T.tryCatch(() => queryP, passError(error))
+}
+
+export const transaction = <T extends any[], R>(error: ErrorName) => (
+  fn: (client: PoolClient, ...args: T) => Promise<R>
+): ((...args: T) => T.TaskEither<ErrorName, R>) => (
+  ...args
+): T.TaskEither<ErrorName, R> => {
+  const queryP = pool.connect().then(async connection => {
+    await connection.query('BEGIN')
+    return fn(connection, ...args)
+      .then(async res => {
+        await connection.query('COMMIT')
+        return res
+      })
+      .catch(async e => {
+        await connection.query('ROLLBACK')
+        throw e
+      })
+      .finally(() => connection.release())
+  })
+
+  return T.tryCatch(() => queryP, passError(error))
+}
 
 export const getClient = () => pool.connect()

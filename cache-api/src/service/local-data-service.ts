@@ -1,4 +1,4 @@
-import { getClient } from '../db'
+import { getClient, withConnection } from '../db'
 import * as T from 'fp-ts/TaskEither'
 import { pipe } from 'fp-ts/function'
 import { Administration, Area } from '../sync/data-sync'
@@ -12,35 +12,21 @@ type QueryResult = Area & Omit<Administration, 'id'>
 const cacheTTL = 60 * 1000 * 15 // 15 mins
 
 const cachedAdministrationsQuery = memoize(
-  () =>
-    getClient()
-      .then(client => {
-        console.info('Querying database... memoize cache too old.')
-        return client
-      })
-      .then(client =>
-        client
-          .query(
-            `
-            select 
-              area.*, 
-              administration."areaId",
-              administration.date,
-              administration.shots
-            from area
-            inner join administration
-            on (area.id = administration."areaId")
-            `
-          )
-          .then(res => res.rows as QueryResult[])
-          .finally(() => client.release())
-      ),
+  withConnection<void[], QueryResult>('DbError')(client =>
+    client.query(
+      `
+      select 
+        area.*, 
+        administration."areaId",
+        administration.date,
+        administration.shots
+      from area
+      inner join administration
+      on (area.id = administration."areaId")
+      `
+    )
+  ),
   cacheTTL
-)
-
-const queryAdministrations = T.tryCatch<ErrorName, QueryResult[]>(
-  () => cachedAdministrationsQuery(),
-  passError('DbError')
 )
 
 const parseQueryResult = R.pipe(
@@ -71,10 +57,13 @@ const summarize = (data: AreaAdministration[]): Summary => ({
   })),
 })
 
-export const getLocalAdministrations = pipe(queryAdministrations, T.map(parseQueryResult))
+export const getLocalAdministrations = pipe(
+  cachedAdministrationsQuery(),
+  T.map(parseQueryResult)
+)
 
 export const getLocalSummary = pipe(
-  queryAdministrations,
+  cachedAdministrationsQuery(),
   T.map(parseQueryResult),
   T.map(summarize)
 )
