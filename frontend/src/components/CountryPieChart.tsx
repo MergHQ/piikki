@@ -33,7 +33,7 @@ export default ({ summary, totalVaccinatees }: Props) => (
         FS.fold(
           () => <LoadingSpinner />,
           () => <p>Error loading data.</p>,
-          data => <Doughnut data={data} />
+          data => <Doughnut data={data} useDesktopSize={true} />
         )
       )
     )}
