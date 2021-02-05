@@ -1,6 +1,7 @@
-import { taskEither as T } from 'fp-ts'
+import { taskEither as T, option as O } from 'fp-ts'
 import { Pool, PoolClient, QueryResult } from 'pg'
 import { ErrorName, passError } from './errors'
+import memoize from './util/memoize'
 
 const pool = new Pool({
   connectionString: process.env.DB_URL,
@@ -33,7 +34,10 @@ export const createTables = (load?: boolean) =>
     }
   })
 
-export const withConnection = <T extends any[], R>(error: ErrorName) => (
+export const withConnection = <T extends any[], R>(
+  error: ErrorName,
+  memoizeTtl: O.Option<number>
+) => (
   fn: (client: PoolClient, ...args: T) => Promise<QueryResult>
 ): ((...args: T) => T.TaskEither<ErrorName, R[]>) => (
   ...args
@@ -44,7 +48,17 @@ export const withConnection = <T extends any[], R>(error: ErrorName) => (
       .finally(() => connection.release())
   )
 
-  return T.tryCatch(() => queryP, passError(error))
+  const memoizedQuery = O.fold(
+    () => () => queryP,
+    (ttl: number) => {
+      return memoize(() => {
+        console.log('Cache is old, fetching from DB')
+        return queryP
+      }, ttl)
+    }
+  )(memoizeTtl)
+
+  return T.tryCatch(() => memoizedQuery(), passError(error))
 }
 
 export const transaction = <T extends any[], R>(error: ErrorName) => (

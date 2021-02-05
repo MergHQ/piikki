@@ -1,19 +1,20 @@
 import { withConnection } from '../db'
-import * as T from 'fp-ts/TaskEither'
+import { taskEither as T, option as O } from 'fp-ts'
 import { pipe } from 'fp-ts/function'
 import { Administration, Area } from '../sync/data-sync'
 import * as R from 'ramda'
-import memoize from '../util/memoize'
 import { AreaAdministration, Summary } from '../../../shared/area-administration'
 
 type QueryResult = Area & Omit<Administration, 'id'>
 
 const cacheTTL = 60 * 1000 * 15 // 15 mins
 
-const cachedAdministrationsQuery = memoize(
-  withConnection<void[], QueryResult>('DbError')(client =>
-    client.query(
-      `
+const cachedAdministrationsQuery = withConnection<void[], QueryResult>(
+  'DbError',
+  O.some(cacheTTL)
+)(client =>
+  client.query(
+    `
       select 
         area.*, 
         administration."areaId",
@@ -23,9 +24,7 @@ const cachedAdministrationsQuery = memoize(
       inner join administration
       on (area.id = administration."areaId")
       `
-    )
-  ),
-  cacheTTL
+  )
 )
 
 const parseQueryResult = R.pipe(
