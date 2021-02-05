@@ -4,6 +4,7 @@ import { ChartData, Chart, ChartOptions } from 'chart.js'
 
 type Props = {
   data: ChartData
+  useDesktopSize?: boolean
   options?: ChartOptions
 }
 
@@ -11,9 +12,15 @@ type ChartComponentProps = Props & {
   type: string
 }
 
-const ChartComponent = ({ data, options, type }: ChartComponentProps) => {
-  const canvas = L.atom<HTMLCanvasElement | null>(null)
+const isMobileView = (useDesktopSize?: boolean) =>
+  window.innerWidth - 2 < 600 && !useDesktopSize
 
+const ChartComponent = ({ data, options, type, useDesktopSize }: ChartComponentProps) => {
+  const canvas = L.atom<HTMLCanvasElement | null>(null)
+  const isMobile = L.fromEvent(window, 'resize').pipe(
+    L.map(() => isMobileView(useDesktopSize)),
+    L.toStatelessProperty(() => isMobileView(useDesktopSize)),
+  )
   canvas.onChange(c => {
     const ctx = c.getContext('2d')
     new Chart(ctx, {
@@ -28,7 +35,13 @@ const ChartComponent = ({ data, options, type }: ChartComponentProps) => {
 
   return (
     <div className={`${type}-chart-container`}>
-      <canvas ref={ref => canvas.set(ref)} width="800" height="1000"></canvas>
+      {L.view(isMobile, mobile => (
+        <canvas
+          ref={ref => canvas.set(ref)}
+          width="800"
+          height={mobile ? 2000 : 1000}
+        ></canvas>
+      ))}
     </div>
   )
 }
