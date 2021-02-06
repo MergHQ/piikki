@@ -42,18 +42,22 @@ export const withConnection = <T extends any[], R>(
 ): ((...args: T) => T.TaskEither<ErrorName, R[]>) => (
   ...args
 ): T.TaskEither<ErrorName, R[]> => {
-  const queryP = pool.connect().then(connection =>
-    fn(connection, ...args)
-      .then(res => res.rows as R[])
-      .finally(() => connection.release())
-  )
+  const doQuery = () =>
+    pool.connect().then(connection =>
+      fn(connection, ...args)
+        .then(res => {
+          console.log(res)
+          return res.rows as R[]
+        })
+        .finally(() => connection.release())
+    )
 
   const memoizedQuery = O.fold(
-    () => () => queryP,
+    () => doQuery,
     (ttl: number) => {
       return memoize(() => {
         console.log('Cache is old, fetching from DB')
-        return queryP
+        return doQuery()
       }, ttl)
     }
   )(memoizeTtl)
