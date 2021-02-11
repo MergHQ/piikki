@@ -45,10 +45,7 @@ export const withConnection = <T extends any[], R>(
   const doQuery = () =>
     pool.connect().then(connection =>
       fn(connection, ...args)
-        .then(res => {
-          console.log(res)
-          return res.rows as R[]
-        })
+        .then(res => res.rows as R[])
         .finally(() => connection.release())
     )
 
