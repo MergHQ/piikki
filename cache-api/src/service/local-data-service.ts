@@ -4,12 +4,13 @@ import { pipe } from 'fp-ts/function'
 import { Administration, Area } from '../sync/data-sync'
 import * as R from 'ramda'
 import { AreaAdministration, Summary } from '../../../shared/area-administration'
+import { AgeGroupAdministration } from '../../../shared/age-group-administration'
 
-type QueryResult = Area & Omit<Administration, 'id'>
+type AreaQueryResult = Area & Omit<Administration, 'id'>
 
 const cacheTTL = 60 * 1000 * 15 // 15 mins
 
-const cachedAdministrationsQuery = withConnection<void[], QueryResult>(
+const cachedAreaAdministrationsQuery = withConnection<void[], AreaQueryResult>(
   'DbError',
   O.some(cacheTTL)
 )(client =>
@@ -27,8 +28,13 @@ const cachedAdministrationsQuery = withConnection<void[], QueryResult>(
   )
 )
 
-const parseQueryResult = R.pipe(
-  R.groupBy<QueryResult>(res => res.id),
+const cachedAgeGroupAdministrationsQuery = withConnection<void[], AgeGroupAdministration>(
+  'DbError',
+  O.some(cacheTTL)
+)(client => client.query('select * from age_group'))
+
+const parseAreaQueryResult = R.pipe(
+  R.groupBy<AreaQueryResult>(res => res.id),
   R.mapObjIndexed(items => {
     const { id, areaName, totalShots } = items[0]
     return {
@@ -55,13 +61,15 @@ const summarize = (data: AreaAdministration[]): Summary => ({
   })),
 })
 
-export const getLocalAdministrations = pipe(
-  cachedAdministrationsQuery(),
-  T.map(parseQueryResult)
+export const getLocalAreaAdministrations = pipe(
+  cachedAreaAdministrationsQuery(),
+  T.map(parseAreaQueryResult)
 )
 
 export const getLocalSummary = pipe(
-  cachedAdministrationsQuery(),
-  T.map(parseQueryResult),
+  cachedAreaAdministrationsQuery(),
+  T.map(parseAreaQueryResult),
   T.map(summarize)
 )
+
+export const getLocalAgeGroupAdministrations = cachedAgeGroupAdministrationsQuery()

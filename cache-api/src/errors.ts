@@ -4,7 +4,7 @@ import { fold } from 'fp-ts/Either'
 import { pipe } from 'fp-ts/lib/function'
 import { map, fromNullable, getOrElse } from 'fp-ts/Option'
 
-export type ErrorName = 'DbError' | 'DataSyncError' | 'HsApiError'
+export type ErrorName = 'DbError' | 'DataSyncError' | 'ThlApiError'
 
 type PiikkiError = {
   errorName: ErrorName
@@ -24,8 +24,8 @@ const errors: PiikkiError[] = [
     status: 500,
   },
   {
-    errorName: 'HsApiError',
-    message: 'Error fetching data from HS api',
+    errorName: 'ThlApiError',
+    message: 'Error fetching data from THL api',
     status: 500,
   },
 ]

@@ -26,6 +26,12 @@ export const createTables = (load?: boolean) =>
         constraint fk_area
           foreign key ("areaId") references area${load ? '_load' : ''}(id)
       );
+
+      create table if not exists age_group${load ? '_load' : ''} (
+        id varchar(255) primary key,
+        "ageGroupName" varchar(255) not null,
+        shots int not null
+      );
       `)
     } catch (e) {
       throw e
@@ -34,6 +40,9 @@ export const createTables = (load?: boolean) =>
     }
   })
 
+/**
+ * Higher order function for queries
+ */
 export const withConnection = <T extends any[], R>(
   error: ErrorName,
   memoizeTtl: O.Option<number>
@@ -62,6 +71,9 @@ export const withConnection = <T extends any[], R>(
   return T.tryCatch(() => memoizedQuery(), passError(error))
 }
 
+/**
+ * Higher order function for transactions
+ */
 export const transaction = <T extends any[], R>(error: ErrorName) => (
   fn: (client: PoolClient, ...args: T) => Promise<R>
 ): ((...args: T) => T.TaskEither<ErrorName, R>) => (

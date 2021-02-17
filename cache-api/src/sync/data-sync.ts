@@ -1,7 +1,11 @@
 import { createTables, transaction } from '../db'
 import { v4 } from 'uuid'
 import * as T from 'fp-ts/TaskEither'
-import { ThlAreaAdministrations, ShotHistory } from '../service/thl-data-service'
+import {
+  ThlAreaAdministrations,
+  ShotHistory,
+  ThlAgeGroupAdministrations,
+} from '../service/thl-data-service'
 import { findFirst, compact, map } from 'fp-ts/lib/Array'
 import * as O from 'fp-ts/Option'
 import { pipe } from 'fp-ts/lib/function'
@@ -33,11 +37,13 @@ const createLoadTables = T.tryCatch(() => createTables(true), passError('DataSyn
 const dropOldTables = transaction('DataSyncError')(async client => {
   await client.query('drop table administration')
   await client.query('drop table area')
+  await client.query('drop table age_group')
 })
 
 const renameTables = transaction('DataSyncError')(async client => {
   await client.query('alter table administration_load rename to administration')
   await client.query('alter table area_load rename to area')
+  await client.query('alter table age_group_load rename to age_group')
 })
 
 const insertAreas = transaction<
@@ -91,7 +97,24 @@ const insertAdministrations = transaction('DataSyncError')(
   }
 )
 
-export const startDataSync = (areaAdministrations: ThlAreaAdministrations[]) =>
+const insertAgeGroups = transaction(
+  'DataSyncError'
+)((client, ageGroupAdministrations: ThlAgeGroupAdministrations[]) =>
+  Promise.all(
+    ageGroupAdministrations.map(({ ageGroupName, shots }) =>
+      client.query('insert into age_group_load values ($1, $2, $3)', [
+        v4(),
+        ageGroupName,
+        shots,
+      ])
+    )
+  )
+)
+
+export const startDataSync = (
+  areaAdministrations: ThlAreaAdministrations[],
+  ageGroupAdministrations: ThlAgeGroupAdministrations[]
+) =>
   pipe(
     areaAdministrations,
     map(({ area, totalShots }) => ({ area, totalShots })),
@@ -103,6 +126,7 @@ export const startDataSync = (areaAdministrations: ThlAreaAdministrations[]) =>
         areaAdministrations.flatMap(({ shotHistory }) => shotHistory)
       )
     ),
+    T.chain(() => insertAgeGroups(ageGroupAdministrations)),
     T.chain(() => dropOldTables()),
     T.chain(() => renameTables())
   )

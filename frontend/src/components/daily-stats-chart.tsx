@@ -1,14 +1,14 @@
 import { h } from 'harmaja'
 import { AreaAdministration } from '../../../shared/area-administration'
 import { ChartData } from 'chart.js'
-import { getWithIdx } from './chartColors'
+import { getWithIdx } from './chart-colors'
 import { startOfDay, format, startOfWeek, sub, add, isSameWeek, isAfter } from 'date-fns'
 import * as R from 'ramda'
 import { Bar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
 import './week-selector.css'
 import * as FS from '../util/fetch-status'
-import LoadingSpinner from './LoadingSpinner'
+import LoadingSpinner from './loading-spinner'
 
 type Props = {
   administrations: L.Property<FS.FetchStatus<AreaAdministration[]>>

@@ -1,16 +1,24 @@
 import * as express from 'express'
 import * as T from 'fp-ts/TaskEither'
 import { startDataSync } from './sync/data-sync'
-import { getLocalAdministrations, getLocalSummary } from './service/local-data-service'
-import { getAdministrations } from './service/thl-data-service'
+import {
+  getLocalAgeGroupAdministrations,
+  getLocalAreaAdministrations,
+  getLocalSummary,
+} from './service/local-data-service'
+import {
+  getAgeGroupAdministrations,
+  getAreaAdministrations,
+} from './service/thl-data-service'
 import * as morgan from 'morgan'
 import * as cors from 'cors'
 import { doTaskEither } from './errors'
 import { createTables } from './db'
+import { pipe } from 'fp-ts/lib/function'
 
 const server = express()
 
-server.use(morgan('common'))
+server.use(morgan('tiny'))
 server.use(cors())
 
 const checkDataSyncToken = (
@@ -23,11 +31,20 @@ const checkDataSyncToken = (
     : res.status(401).json({ message: 'unauthorized' })
 
 server.get('/administrations/summary', doTaskEither(getLocalSummary))
-server.get('/administrations', doTaskEither(getLocalAdministrations))
+server.get('/administrations', doTaskEither(getLocalAreaAdministrations))
+server.get('/administrations/ageGroups', doTaskEither(getLocalAgeGroupAdministrations))
 server.put(
   '/syncData',
   checkDataSyncToken,
-  doTaskEither(T.chain(startDataSync)(getAdministrations), 'data sync done')
+  doTaskEither(
+    pipe(
+      T.sequenceArray([getAreaAdministrations as any, getAgeGroupAdministrations as any]), // really don't know a better way to do this
+      T.chain(([areaAdministrations, ageGroupAdministrations]: [any, any]) =>
+        startDataSync(areaAdministrations, ageGroupAdministrations)
+      )
+    ),
+    'data sync done'
+  )
 )
 
 const port = process.env.PORT || 4000

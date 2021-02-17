@@ -1,11 +1,11 @@
 import { h } from 'harmaja'
 import { Summary } from '../../../shared/area-administration'
 import { ChartData } from 'chart.js'
-import chartColors from './chartColors'
+import chartColors from './chart-colors'
 import { Doughnut } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
 import * as FS from '../util/fetch-status'
-import LoadingSpinner from './LoadingSpinner'
+import LoadingSpinner from './loading-spinner'
 
 type Props = {
   summary: L.Property<FS.FetchStatus<Summary>>
