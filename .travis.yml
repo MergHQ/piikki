@@ -12,10 +12,6 @@ script:
   - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
   - export REPOSITORY=piikki-cache-api
   - export IMAGE_TAG=latest
-  - cd cache-api
-  - docker build -t hugis420/$REPOSITORY:$IMAGE_TAG .
-  - docker push hugis420/$REPOSITORY:$IMAGE_TAG
-  - cd ../tg-bot
+  - sh push-api.sh
   - export REPOSITORY=piikki-tg-bot
-  - docker build -t hugis420/$REPOSITORY:$IMAGE_TAG .
-  - docker push hugis420/$REPOSITORY:$IMAGE_TAG
+  - sh push-tg-bot.sh

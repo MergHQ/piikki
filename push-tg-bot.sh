@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -f ./tg-bot/Dockerfile -t registry.digitalocean.com/merg-registry/piikki-tg-bot:latest .
-docker push registry.digitalocean.com/merg-registry/piikki-tg-bot:latest
+docker build -f ./tg-bot/Dockerfile -t hugis420/$REPOSITORY:$IMAGE_TAG .
+docker push hugis420/$REPOSITORY:$IMAGE_TAG

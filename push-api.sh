@@ -1,4 +1,4 @@
 #!/bin/bash
 
-docker build -f ./cache-api/Dockerfile -t registry.digitalocean.com/merg-registry/piikki-cache-api:latest .
-docker push registry.digitalocean.com/merg-registry/piikki-cache-api:latest
+docker build -f ./cache-api/Dockerfile -t hugis420/$REPOSITORY:$IMAGE_TAG .
+docker push hugis420/$REPOSITORY:$IMAGE_TAG
