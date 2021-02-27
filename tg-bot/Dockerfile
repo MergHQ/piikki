@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM arm64v8/node:14-alpine
 
 WORKDIR /app/tg-bot
 

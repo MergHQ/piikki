@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: piikki-cache-api
-          image: registry.digitalocean.com/merg-registry/piikki-cache-api:latest
+          image: hugis420/piikki-cache-api:latest
           imagePullPolicy: 'Always'
           ports:
             - containerPort: 4000
@@ -86,7 +86,7 @@ spec:
         spec:
           containers:
             - name: piikki-tg-bot
-              image: registry.digitalocean.com/merg-registry/piikki-tg-bot:latest
+              image: hugis420/piikki-tg-bot:latest
               env:
                 - name: BOT_TOKEN
                   valueFrom:

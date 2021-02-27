@@ -1,0 +1,21 @@
+language: python
+
+arch:
+  - arm64
+
+services:
+  - docker
+
+install: skip
+
+script:
+  - echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+  - export REPOSITORY=piikki-cache-api
+  - export IMAGE_TAG=latest
+  - cd cache-api
+  - docker build -t hugis420/$REPOSITORY:$IMAGE_TAG .
+  - docker push hugis420/$REPOSITORY:$IMAGE_TAG
+  - cd ../tg-bot
+  - export REPOSITORY=piikki-tg-bot
+  - docker build -t hugis420/$REPOSITORY:$IMAGE_TAG .
+  - docker push hugis420/$REPOSITORY:$IMAGE_TAG
