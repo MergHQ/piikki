@@ -63,7 +63,7 @@ const applyWeekFilter = ({
     administrations.map(({ shotHistory, ...rest }) => ({
       ...rest,
       shotHistory: shotHistory.filter(({ date }) =>
-        isSameWeek(selectedWeek, new Date(date))
+        isSameWeek(selectedWeek, new Date(date), { weekStartsOn: 1 })
       ),
     }))
   )(administrationsStatus)

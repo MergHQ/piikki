@@ -24,6 +24,23 @@ const toChartData = (totalVaccinatees: number) =>
     ],
   }))
 
+const percentLabel = (total: number) => (
+  item: Chart.ChartTooltipItem,
+  data: ChartData
+) => {
+  const dataset = data.datasets[0]
+  const perc = ((Number(dataset.data[item.index]) / total) * 100).toFixed(2)
+  return `(${perc}%)`
+}
+
+const options = (totalVaccinatees: number) => ({
+  tooltips: {
+    callbacks: {
+      afterLabel: percentLabel(totalVaccinatees),
+    },
+  },
+})
+
 export default ({ summary, totalVaccinatees }: Props) => (
   <div className="data-container">
     <h2 className="data-container__title">Current vaccine situation</h2>
@@ -33,7 +50,13 @@ export default ({ summary, totalVaccinatees }: Props) => (
         FS.fold(
           () => <LoadingSpinner />,
           () => <p>Error loading data.</p>,
-          data => <Doughnut data={data} useDesktopSize={true} />
+          data => (
+            <Doughnut
+              data={data}
+              options={options(totalVaccinatees)}
+              useDesktopSize={true}
+            />
+          )
         )
       )
     )}
