@@ -3,6 +3,7 @@ import { AreaAdministration } from '../../../shared/area-administration'
 import { ChartData } from 'chart.js'
 import { getWithIdx } from './chart-colors'
 import { startOfDay, format, startOfWeek, sub, add, isSameWeek, isAfter } from 'date-fns'
+import { fi } from 'date-fns/locale'
 import * as R from 'ramda'
 import { Bar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
@@ -68,9 +69,9 @@ const applyWeekFilter = ({
     }))
   )(administrationsStatus)
 
-const isWeekDisabled = (d: Date) => isAfter(d, startOfWeek(new Date()))
+const isWeekDisabled = (d: Date) => isAfter(d, startOfWeek(new Date(), { locale: fi }))
 
-const selectedWeek = L.atom(startOfWeek(new Date()))
+const selectedWeek = L.atom(startOfWeek(new Date(), { locale: fi }))
 const disableNextWeek = selectedWeek.pipe(
   L.map<Date, boolean>(d => isWeekDisabled(add(d, { weeks: 1 })))
 )
@@ -97,7 +98,7 @@ const WeekSelector = () => (
     <button className="week-selector__button" onClick={handleWeekChange('sub')}>
       ᐊ
     </button>
-    <p>{L.view(selectedWeek, ts => `Week ${format(ts, 'w yyyy')}`)}</p>
+    <p>{L.view(selectedWeek, ts => `Week ${format(ts, 'w yyyy', { locale: fi })}`)}</p>
     {L.view(disableNextWeek, disabled => (
       <button
         className="week-selector__button"
