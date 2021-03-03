@@ -11,20 +11,22 @@ const thlClient = axios.create({
   baseURL,
 })
 
-type ThlRequestParams = {
-  row: string
-  column: string
-}
+type ThlRequestParams = Array<['row' | 'column', string]>
 
-const areaParams = {
-  row: 'area-518362',
-  column: 'dateweek20201226-525461L',
-}
+const toQueryParams = (params: ThlRequestParams): string =>
+  `?${params.map(([k, v]) => `${k}=${v}`).join('&')}`
 
-const ageGroupParams = {
-  row: 'cov_vac_age-518413',
-  column: 'dateweek20201226-525425',
-}
+const areaParams: ThlRequestParams = [
+  ['row', 'area-518362'],
+  ['column', 'dateweek20201226-525461L'],
+  ['column', 'cov_vac_dose-533170'],
+]
+
+const ageGroupParams: ThlRequestParams = [
+  ['row', 'cov_vac_age-518413'],
+  ['column', 'dateweek20201226-525425'],
+  ['column', 'cov_vac_dose-533170'],
+]
 
 type ParsedThlAreaResponseEntry = {
   date: string
@@ -91,7 +93,7 @@ const parseJsonstat = (formatFn: (rawRow: any) => any) => (data: unknown) =>
 
 const doRequest = (params: ThlRequestParams) =>
   T.tryCatch(
-    () => thlClient.get('', { params }).then(({ data }) => data),
+    () => thlClient.get(toQueryParams(params)).then(({ data }) => data),
     passError('ThlApiError')
   )
 
