@@ -5,7 +5,7 @@ import * as R from 'ramda'
 import { passError } from '../errors'
 const jsonstat = require('jsonstat-toolkit')
 
-const baseURL = 'https://sampo.thl.fi/pivot/prod/fi/vaccreg/cov19cov/fact_cov19cov.json'
+const baseURL = 'https://sampo.thl.fi/pivot/prod/en/vaccreg/cov19cov/fact_cov19cov.json'
 
 const thlClient = axios.create({
   baseURL,
@@ -16,46 +16,48 @@ type ThlRequestParams = Array<['row' | 'column', string]>
 const toQueryParams = (params: ThlRequestParams): string =>
   `?${params.map(([k, v]) => `${k}=${v}`).join('&')}`
 
-const areaParams: ThlRequestParams = [
+const areaParams = (dose: 1 | 2): ThlRequestParams => [
   ['row', 'area-518362'],
   ['column', 'dateweek20201226-525461L'],
-  ['column', 'cov_vac_dose-533170'],
+  ['column', dose === 1 ? 'cov_vac_dose-533170' : 'cov_vac_dose-533164'],
 ]
 
-const ageGroupParams: ThlRequestParams = [
+const ageGroupParams = (dose: 1 | 2): ThlRequestParams => [
   ['row', 'cov_vac_age-518413'],
   ['column', 'dateweek20201226-525425'],
-  ['column', 'cov_vac_dose-533170'],
+  ['column', dose === 1 ? 'cov_vac_dose-533170' : 'cov_vac_dose-533164'],
 ]
 
 type ParsedThlAreaResponseEntry = {
   date: string
   area: string
+  dose: 1 | 2
   shots: number
 }
 
 type ParsedThlAgeGroupResponseEntry = {
   ageGroup: string
   week: string
+  dose: 1 | 2
   shots: number
 }
 
-export type ShotHistory = Pick<ParsedThlAreaResponseEntry, 'area' | 'date' | 'shots'>
+export type ShotHistory = Pick<ParsedThlAreaResponseEntry, 'area' | 'date'> & {
+  firstDoseShots: number
+  secondDoseShots: number
+}
 
 export type ThlAreaAdministrations = {
   area: string
-  totalShots: number
+  totalFirstDoseShots: number
+  totalSecondDoseShots: number
   shotHistory: ShotHistory[]
 }
 
 export type ThlAgeGroupAdministrations = {
   ageGroupName: string
-  shots: number
-}
-
-export const parseInvalidTimestamp = (date: string) => {
-  const [beginning, end] = R.splitAt(10, date.split('')).map(p => p.join(''))
-  return `${beginning}T${end}`
+  firstDoseShots: number
+  secondDoseShots: number
 }
 
 const parseAreasResponse: (
@@ -63,11 +65,25 @@ const parseAreasResponse: (
 ) => ThlAreaAdministrations[] = R.pipe(
   (v: ParsedThlAreaResponseEntry[]) => v.filter(a => a.area !== 'Finland'),
   R.groupBy(a => a.area),
-  R.mapObjIndexed(list => ({
-    area: list[0].area,
-    totalShots: R.sum(list.map(i => i.shots)),
-    shotHistory: list,
-  })),
+  R.mapObjIndexed(list => {
+    const grpByDose = R.groupBy(e => String(e.dose), list)
+    const [dose1, dose2] = R.values(grpByDose)
+    return {
+      area: list[0].area,
+      totalFirstDoseShots: R.sum(dose1.map(i => i.shots)),
+      totalSecondDoseShots: R.sum(dose2.map(i => i.shots)),
+      shotHistory: R.zipWith(
+        (d1, d2) => ({
+          area: d1.area,
+          date: d1.date,
+          firstDoseShots: d1.shots,
+          secondDoseShots: d2.shots,
+        }),
+        dose1,
+        dose2
+      ),
+    }
+  }),
   R.values,
   R.flatten
 )
@@ -76,14 +92,17 @@ const parseAgeGroupReponse: (
   input: ParsedThlAgeGroupResponseEntry[]
 ) => ThlAgeGroupAdministrations[] = R.pipe(
   (input: ParsedThlAgeGroupResponseEntry[]) =>
-    input.filter(
-      ({ week, ageGroup }) => week !== 'Kaikki ajat' && ageGroup !== 'Kaikki iät'
-    ),
+    input.filter(({ week, ageGroup }) => week !== 'All times' && ageGroup !== 'All ages'),
   R.groupBy(e => e.ageGroup),
-  R.mapObjIndexed(list => ({
-    ageGroupName: list[0].ageGroup,
-    shots: R.sum(list.map(e => e.shots)),
-  })),
+  R.mapObjIndexed(list => {
+    const grpByDose = R.groupBy(e => String(e.dose), list)
+    const [dose1, dose2] = R.values(grpByDose)
+    return {
+      ageGroupName: list[0].ageGroup,
+      firstDoseShots: R.sum(dose1.map(e => e.shots)),
+      secondDoseShots: R.sum(dose2.map(e => e.shots)),
+    }
+  }),
   R.values,
   R.flatten
 )
@@ -91,32 +110,53 @@ const parseAgeGroupReponse: (
 const parseJsonstat = (formatFn: (rawRow: any) => any) => (data: unknown) =>
   jsonstat(data).Dataset(0).toTable({ type: 'arrobj' }).map(formatFn)
 
-const doRequest = (params: ThlRequestParams) =>
+const doRequests = (params: ThlRequestParams[]) =>
   T.tryCatch(
-    () => thlClient.get(toQueryParams(params)).then(({ data }) => data),
+    () =>
+      Promise.all(
+        params.map(param => thlClient.get(toQueryParams(param)).then(({ data }) => data))
+      ).then(res => res.flatMap(data => data)),
     passError('ThlApiError')
   )
 
+const fetchAreaAdministrations = pipe(
+  doRequests([areaParams(1), areaParams(2)]),
+  T.map((responses: any[]) =>
+    responses
+      .map(
+        parseJsonstat(({ value, dateweek20201226, area, cov_vac_dose }) => ({
+          date: new Date(dateweek20201226).toJSON(),
+          area: area === 'All areas' ? 'Finland' : area,
+          dose: cov_vac_dose === 'First dose' ? 1 : 2,
+          shots: value ? Number(value) : 0,
+        }))
+      )
+      .flat()
+  )
+)
+
+const fetchAgeGroupAdministrations = pipe(
+  doRequests([ageGroupParams(1), ageGroupParams(2)]),
+  T.map((responses: any[]) =>
+    responses
+      .map(
+        parseJsonstat(({ value, cov_vac_age, dateweek20201226, cov_vac_dose }) => ({
+          ageGroup: cov_vac_age === '-19' ? '0-19' : cov_vac_age,
+          week: dateweek20201226,
+          dose: cov_vac_dose === 'First dose' ? 1 : 2,
+          shots: value ? Number(value) : null,
+        }))
+      )
+      .flat()
+  )
+)
+
 export const getAreaAdministrations = pipe(
-  doRequest(areaParams),
-  T.map(
-    parseJsonstat(({ value, dateweek20201226, area }) => ({
-      date: new Date(dateweek20201226).toJSON(),
-      area: area === 'Kaikki alueet' ? 'Finland' : area,
-      shots: value ? Number(value) : 0,
-    }))
-  ),
+  fetchAreaAdministrations,
   T.map(parseAreasResponse)
 )
 
 export const getAgeGroupAdministrations = pipe(
-  doRequest(ageGroupParams),
-  T.map(
-    parseJsonstat(({ value, cov_vac_age, dateweek20201226 }) => ({
-      ageGroup: cov_vac_age === '-19' ? '0-19' : cov_vac_age,
-      week: dateweek20201226,
-      shots: value ? Number(value) : null,
-    }))
-  ),
+  fetchAgeGroupAdministrations,
   T.map(parseAgeGroupReponse)
 )

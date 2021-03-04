@@ -49,7 +49,7 @@ const toChartData = FS.map<AreaAdministration[], ChartData>(administrations => {
     labels: labels(administrations),
     datasets: administrations.map(({ shotHistory, areaName }, i) => ({
       label: areaName,
-      data: shotHistory.map(({ shots }) => shots),
+      data: shotHistory.map(({ firstDoseShots }) => firstDoseShots),
       backgroundColor: getWithIdx(i),
       borderWidth: 0,
     })),
@@ -114,6 +114,7 @@ const WeekSelector = () => (
 export default ({ administrations }: Props) => (
   <div className="data-container">
     <h2 className="data-container__title">Daily vaccinations administered per area</h2>
+    <p>Only first dose</p>
     <WeekSelector />
     {L.combineTemplate({
       administrationsStatus: administrations,

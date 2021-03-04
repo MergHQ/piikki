@@ -14,14 +14,16 @@ import { passError } from '../errors'
 export type Area = {
   id: string
   areaName: string
-  totalShots: number
+  totalFirstDoseShots: number
+  totalSecondDoseShots: number
 }
 
 export type Administration = {
   id: string
   areaId: string
   date: Date
-  shots: number
+  firstDoseShots: number
+  secondDoseShots: number
 }
 
 const passthorugh = <T>(te: T.TaskEither<string, void>) => (
@@ -47,20 +49,27 @@ const renameTables = transaction('DataSyncError')(async client => {
 })
 
 const insertAreas = transaction<
-  Pick<ThlAreaAdministrations, 'area' | 'totalShots'>[][],
+  Pick<
+    ThlAreaAdministrations,
+    'area' | 'totalFirstDoseShots' | 'totalSecondDoseShots'
+  >[][],
   Area[]
 >('DataSyncError')(async (client, areas) => {
-  const dbAreas: Area[] = areas.map(({ area, totalShots }) => ({
-    id: v4(),
-    areaName: area,
-    totalShots,
-  }))
+  const dbAreas: Area[] = areas.map(
+    ({ area, totalFirstDoseShots, totalSecondDoseShots }) => ({
+      id: v4(),
+      areaName: area,
+      totalFirstDoseShots,
+      totalSecondDoseShots,
+    })
+  )
   await Promise.all(
     dbAreas.map(a =>
-      client.query('insert into area_load values ($1, $2, $3)', [
+      client.query('insert into area_load values ($1, $2, $3, $4)', [
         a.id,
         a.areaName,
-        a.totalShots,
+        a.totalFirstDoseShots,
+        a.totalSecondDoseShots,
       ])
     )
   )
@@ -71,7 +80,7 @@ const insertAreas = transaction<
 const insertAdministrations = transaction('DataSyncError')(
   async (client, dbAreas: Area[], shotHistory: ShotHistory[]) => {
     const administrations: O.Option<Administration>[] = shotHistory.map(
-      ({ date, shots, area }) =>
+      ({ date, firstDoseShots, secondDoseShots, area }) =>
         pipe(
           dbAreas,
           findFirst(a => a.areaName === area),
@@ -79,18 +88,20 @@ const insertAdministrations = transaction('DataSyncError')(
             id: v4(),
             areaId: dbArea.id,
             date: new Date(date),
-            shots,
+            firstDoseShots,
+            secondDoseShots,
           }))
         )
     )
 
     return Promise.all(
       compact(administrations).map(a =>
-        client.query('insert into administration_load values ($1, $2, $3, $4)', [
+        client.query('insert into administration_load values ($1, $2, $3, $4, $5)', [
           a.id,
           a.areaId,
           a.date,
-          a.shots,
+          a.firstDoseShots,
+          a.secondDoseShots,
         ])
       )
     )
@@ -101,11 +112,12 @@ const insertAgeGroups = transaction(
   'DataSyncError'
 )((client, ageGroupAdministrations: ThlAgeGroupAdministrations[]) =>
   Promise.all(
-    ageGroupAdministrations.map(({ ageGroupName, shots }) =>
-      client.query('insert into age_group_load values ($1, $2, $3)', [
+    ageGroupAdministrations.map(({ ageGroupName, firstDoseShots, secondDoseShots }) =>
+      client.query('insert into age_group_load values ($1, $2, $3, $4)', [
         v4(),
         ageGroupName,
-        shots,
+        firstDoseShots,
+        secondDoseShots,
       ])
     )
   )
@@ -117,7 +129,11 @@ export const startDataSync = (
 ) =>
   pipe(
     areaAdministrations,
-    map(({ area, totalShots }) => ({ area, totalShots })),
+    map(({ area, totalFirstDoseShots, totalSecondDoseShots }) => ({
+      area,
+      totalFirstDoseShots,
+      totalSecondDoseShots,
+    })),
     passthorugh(createLoadTables),
     T.chain(insertAreas),
     T.chain(areas =>

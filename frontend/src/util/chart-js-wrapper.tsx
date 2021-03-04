@@ -19,7 +19,7 @@ const ChartComponent = ({ data, options, type, useDesktopSize }: ChartComponentP
   const canvas = L.atom<HTMLCanvasElement | null>(null)
   const isMobile = L.fromEvent(window, 'resize').pipe(
     L.map(() => isMobileView(useDesktopSize)),
-    L.toStatelessProperty(() => isMobileView(useDesktopSize)),
+    L.toStatelessProperty(() => isMobileView(useDesktopSize))
   )
   canvas.onChange(c => {
     const ctx = c.getContext('2d')
@@ -49,3 +49,7 @@ const ChartComponent = ({ data, options, type, useDesktopSize }: ChartComponentP
 export const Doughnut = (props: Props) => <ChartComponent {...props} type="doughnut" />
 
 export const Bar = (props: Props) => <ChartComponent {...props} type="bar" />
+
+export const HorizontalBar = (props: Props) => (
+  <ChartComponent {...props} type="horizontalBar" />
+)

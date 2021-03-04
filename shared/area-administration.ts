@@ -1,17 +1,23 @@
 export type AreaAdministration = {
   areaId: string
   areaName: string
-  totalShots: number
+  totalFirstDoseShots: number
+  totalSecondDoseShots: number
   shotHistory: {
     areaId: string
     date: Date
-    shots: number
+    firstDoseShots: number
+    secondDoseShots: number
   }[]
 }
 
 export type Summary = {
-  totalShots: number
+  totalFirstDoseShots: number
+  totalSecondDoseShots: number
   areas: Array<
-    Pick<AreaAdministration, 'areaId' | 'areaName'> & { areaTotalShots: number }
+    Pick<AreaAdministration, 'areaId' | 'areaName'> & {
+      areaFirstDoseShots: number
+      areaSecondDoseShots: number
+    }
   >
 }

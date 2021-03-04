@@ -20,7 +20,8 @@ const cachedAreaAdministrationsQuery = withConnection<void[], AreaQueryResult>(
         area.*, 
         administration."areaId",
         administration.date,
-        administration.shots
+        administration."firstDoseShots",
+        administration."secondDoseShots"
       from area
       inner join administration
       on (area.id = administration."areaId")
@@ -36,15 +37,17 @@ const cachedAgeGroupAdministrationsQuery = withConnection<void[], AgeGroupAdmini
 const parseAreaQueryResult = R.pipe(
   R.groupBy<AreaQueryResult>(res => res.id),
   R.mapObjIndexed(items => {
-    const { id, areaName, totalShots } = items[0]
+    const { id, areaName, totalFirstDoseShots, totalSecondDoseShots } = items[0]
     return {
       areaId: id,
       areaName,
-      totalShots,
-      shotHistory: items.map(({ areaId, date, shots }) => ({
+      totalFirstDoseShots,
+      totalSecondDoseShots,
+      shotHistory: items.map(({ areaId, date, firstDoseShots, secondDoseShots }) => ({
         areaId,
         date: new Date(date),
-        shots,
+        firstDoseShots,
+        secondDoseShots,
       })),
     } as AreaAdministration
   }),
@@ -53,11 +56,13 @@ const parseAreaQueryResult = R.pipe(
 )
 
 const summarize = (data: AreaAdministration[]): Summary => ({
-  totalShots: data.reduce((p, c) => p + c.totalShots, 0),
-  areas: data.map(({ areaId, areaName, totalShots }) => ({
+  totalFirstDoseShots: data.reduce((p, c) => p + c.totalFirstDoseShots, 0),
+  totalSecondDoseShots: data.reduce((p, c) => p + c.totalSecondDoseShots, 0),
+  areas: data.map(({ areaId, areaName, totalFirstDoseShots, totalSecondDoseShots }) => ({
     areaId,
     areaName,
-    areaTotalShots: totalShots,
+    areaFirstDoseShots: totalFirstDoseShots,
+    areaSecondDoseShots: totalSecondDoseShots,
   })),
 })
 

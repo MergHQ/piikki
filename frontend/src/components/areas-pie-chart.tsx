@@ -15,7 +15,7 @@ const toChartData = FS.map<Summary, ChartData>(summary => ({
   labels: summary.areas.map(({ areaName }) => areaName),
   datasets: [
     {
-      data: summary.areas.map(({ areaTotalShots }) => areaTotalShots),
+      data: summary.areas.map(({ areaFirstDoseShots }) => areaFirstDoseShots),
       backgroundColor: chartColors,
       borderWidth: 0,
     },
@@ -26,6 +26,7 @@ export default ({ summary }: Props) => {
   return (
     <div className="data-container">
       <h2 className="data-container__title">Vaccinated per area</h2>
+      <p>Only first dose</p>
       {summary.pipe(
         L.map(toChartData),
         L.map(

@@ -16,7 +16,7 @@ const toChartData = FS.map<AgeGroupAdministration[], ChartData>(
     labels: ageGroupAdministrations.map(({ ageGroupName }) => ageGroupName),
     datasets: [
       {
-        data: ageGroupAdministrations.map(({ shots }) => shots),
+        data: ageGroupAdministrations.map(({ firstDoseShots }) => firstDoseShots),
         backgroundColor: chartColors,
         borderWidth: 0,
       },
@@ -28,6 +28,7 @@ export default ({ ageGroupAdministrations }: Props) => {
   return (
     <div className="data-container">
       <h2 className="data-container__title">Vaccinated per age group</h2>
+      <p>Only first dose</p>
       {ageGroupAdministrations.pipe(
         L.map(toChartData),
         L.map(
