@@ -43,7 +43,7 @@ const percentLabel = (total: number) => (
   item: Chart.ChartTooltipItem,
   data: ChartData
 ) => {
-  const dataset = data.datasets[0]
+  const dataset = data.datasets[item.datasetIndex]
   const perc = ((Number(dataset.data[item.index]) / total) * 100).toFixed(2)
   return `(${perc}%)`
 }
