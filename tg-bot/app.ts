@@ -12,7 +12,7 @@ const piikki = axios.create({
 
 const parseResponse = (
   admstr: AreaAdministration[]
-): { date: string; shots: number } => ({
+): { date: string; firstDoseShots: number; secondDoseShots: number } => ({
   // Clean this shit up
   date: format(
     admstr
@@ -21,18 +21,27 @@ const parseResponse = (
       .map(({ date }) => new Date(date))[0],
     'd.M.yyyy'
   ),
-  shots: admstr.flatMap(a => a.shotHistory).reduce((p, c) => p + c.shots, 0),
+  firstDoseShots: admstr
+    .flatMap(a => a.shotHistory)
+    .reduce((p, c) => p + c.firstDoseShots, 0),
+  secondDoseShots: admstr
+    .flatMap(a => a.shotHistory)
+    .reduce((p, c) => p + c.secondDoseShots, 0),
 })
 
 piikki
   .get<AreaAdministration[]>('/administrations')
   .then(res => res.data)
   .then(parseResponse)
-  .then(({ date, shots }) =>
+  .then(({ date, firstDoseShots, secondDoseShots }) =>
     tg.post('/sendMessage', {
       chat_id: process.env.CHANNEL_ID,
-      text: `(päivitetty ${date}) tiedon mukaan tällä hetkellä on rokotettu *${shots}* ${
-        shots > 0 ? 'henkilöä' : 'henkilö'
+      text: `(päivitetty ${date}) tällä hetkellä tilasto on seuraava:\n
+      Ensimmäin rokoteannos: *${firstDoseShots}* ${
+        firstDoseShots > 0 ? 'henkilöä' : 'henkilö'
+      }\n
+      Toinen rokoteannos: *${secondDoseShots}* ${
+        secondDoseShots > 0 ? 'henkilöä' : 'henkilö'
       }`,
       parse_mode: 'Markdown',
     })
