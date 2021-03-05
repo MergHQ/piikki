@@ -122,32 +122,28 @@ const doRequests = (params: ThlRequestParams[]) =>
 const fetchAreaAdministrations = pipe(
   doRequests([areaParams(1), areaParams(2)]),
   T.map((responses: any[]) =>
-    responses
-      .map(
-        parseJsonstat(({ value, dateweek20201226, area, cov_vac_dose }) => ({
-          date: new Date(dateweek20201226).toJSON(),
-          area: area === 'All areas' ? 'Finland' : area,
-          dose: cov_vac_dose === 'First dose' ? 1 : 2,
-          shots: value ? Number(value) : 0,
-        }))
-      )
-      .flat()
+    responses.flatMap(
+      parseJsonstat(({ value, dateweek20201226, area, cov_vac_dose }) => ({
+        date: new Date(dateweek20201226).toJSON(),
+        area: area === 'All areas' ? 'Finland' : area,
+        dose: cov_vac_dose === 'First dose' ? 1 : 2,
+        shots: value ? Number(value) : 0,
+      }))
+    )
   )
 )
 
 const fetchAgeGroupAdministrations = pipe(
   doRequests([ageGroupParams(1), ageGroupParams(2)]),
   T.map((responses: any[]) =>
-    responses
-      .map(
-        parseJsonstat(({ value, cov_vac_age, dateweek20201226, cov_vac_dose }) => ({
-          ageGroup: cov_vac_age === '-19' ? '0-19' : cov_vac_age,
-          week: dateweek20201226,
-          dose: cov_vac_dose === 'First dose' ? 1 : 2,
-          shots: value ? Number(value) : null,
-        }))
-      )
-      .flat()
+    responses.flatMap(
+      parseJsonstat(({ value, cov_vac_age, dateweek20201226, cov_vac_dose }) => ({
+        ageGroup: cov_vac_age === '-19' ? '0-19' : cov_vac_age,
+        week: dateweek20201226,
+        dose: cov_vac_dose === 'First dose' ? 1 : 2,
+        shots: value ? Number(value) : null,
+      }))
+    )
   )
 )
 
