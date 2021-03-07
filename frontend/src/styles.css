@@ -52,4 +52,8 @@ body {
   .bar-chart-container {
     max-width: 300px;
   }
+
+  .horizontalBar-chart-container {
+    max-width: 270px;
+  }
 }

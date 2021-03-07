@@ -46,5 +46,5 @@ export default () => ({
   areaAdministrations: administrationsP,
   ageGroupAdministrations: ageGroupAdministrationsP,
   summary: summaryP,
-  totalVaccinatees: 5584105,
+  totalVaccinatees: 5546073,
 })
