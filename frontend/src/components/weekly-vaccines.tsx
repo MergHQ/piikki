@@ -1,6 +1,5 @@
 import { h } from 'harmaja'
 import { AreaAdministration, ShotEntry } from '../../../shared/area-administration'
-import { ChartData } from 'chart.js'
 import { getWithIdx } from './chart-colors'
 import { Bar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
