@@ -1,7 +1,6 @@
 import { h } from 'harmaja'
 import { Summary } from '../../../shared/area-administration'
 import { ChartData, ChartOptions } from 'chart.js'
-import chartColors from './chart-colors'
 import { HorizontalBar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
 import * as FS from '../util/fetch-status'

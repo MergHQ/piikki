@@ -53,3 +53,5 @@ export const Bar = (props: Props) => <ChartComponent {...props} type="bar" />
 export const HorizontalBar = (props: Props) => (
   <ChartComponent {...props} type="horizontalBar" />
 )
+
+export const LerpedLineChart = (props: Props) => <ChartComponent {...props} type="line" />

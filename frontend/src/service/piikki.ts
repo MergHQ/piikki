@@ -3,10 +3,7 @@ import { AreaAdministration, Summary } from '../../../shared/area-administration
 import { AgeGroupAdministration } from '../../../shared/age-group-administration'
 
 const client = axios.create({
-  baseURL:
-    window.location.hostname === 'localhost'
-      ? 'http://localhost:4000'
-      : 'https://piikki-api.lab.juiciness.io',
+  baseURL: process.env.REACT_APP_LOCAL_API_URL || 'https://piikki-api.lab.juiciness.io',
 })
 
 export const getSummary = (): Promise<Summary | null> =>

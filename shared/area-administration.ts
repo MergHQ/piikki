@@ -1,14 +1,16 @@
+export type ShotEntry = {
+  areaId: string
+  date: Date
+  firstDoseShots: number
+  secondDoseShots: number
+}
+
 export type AreaAdministration = {
   areaId: string
   areaName: string
   totalFirstDoseShots: number
   totalSecondDoseShots: number
-  shotHistory: {
-    areaId: string
-    date: Date
-    firstDoseShots: number
-    secondDoseShots: number
-  }[]
+  shotHistory: ShotEntry[]
 }
 
 export type Summary = {

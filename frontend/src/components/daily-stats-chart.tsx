@@ -4,7 +4,7 @@ import { ChartData } from 'chart.js'
 import { getWithIdx } from './chart-colors'
 import { startOfDay, format, startOfWeek, sub, add, isSameWeek, isAfter } from 'date-fns'
 import { fi } from 'date-fns/locale'
-import * as R from 'ramda'
+import * as R from 'remeda'
 import { Bar } from '../util/chart-js-wrapper'
 import * as L from 'lonna'
 import './week-selector.css'
@@ -40,13 +40,14 @@ const options = {
 
 const toChartData = FS.map<AreaAdministration[], ChartData>(administrations => {
   const labels = R.pipe(
-    (x0: AreaAdministration[]) => x0.flatMap(({ shotHistory }) => shotHistory),
+    administrations,
+    R.flatMap(({ shotHistory }) => shotHistory),
     R.map(({ date }) => format(startOfDay(new Date(date)), 'd.M.yyyy')),
-    R.uniq
+    R.uniq() // Types broken
   )
 
   return {
-    labels: labels(administrations),
+    labels,
     datasets: administrations.map(({ shotHistory, areaName }, i) => ({
       label: areaName,
       data: shotHistory.map(({ firstDoseShots }) => firstDoseShots),

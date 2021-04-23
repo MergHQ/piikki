@@ -5,6 +5,7 @@ import Footer from './components/Footer'
 import DailyStatsChart from './components/daily-stats-chart'
 import { AppProps } from './stores/app-store'
 import AgeGroupsPieChart from './components/age-groups-pie-chart'
+import WeeklyVaccines from './components/weekly-vaccines'
 
 export default ({
   summary,
@@ -19,6 +20,7 @@ export default ({
       <AreasPieChart summary={summary} />
       <AgeGroupsPieChart ageGroupAdministrations={ageGroupAdministrations} />
       <DailyStatsChart administrations={areaAdministrations} />
+      <WeeklyVaccines administrations={areaAdministrations} />
     </div>
     <Footer></Footer>
   </>
