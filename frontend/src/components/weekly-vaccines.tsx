@@ -7,6 +7,7 @@ import * as FS from '../util/fetch-status'
 import LoadingSpinner from './loading-spinner'
 import * as R from 'remeda'
 import { format } from 'date-fns'
+import { fi } from 'date-fns/locale'
 
 type Props = {
   administrations: L.Property<FS.FetchStatus<AreaAdministration[]>>
@@ -19,7 +20,7 @@ const currentWeek = format(new Date(), 'w.Y')
 const groupedByWeek = (x0: ShotEntry[]) =>
   R.pipe(
     x0,
-    R.groupBy(({ date }) => format(new Date(date), 'w.Y')),
+    R.groupBy(({ date }) => format(new Date(date), 'w.Y', { locale: fi } )),
     R.mapValues((shots, k) => ({
       firstShots: sum(shots.map(({ firstDoseShots }) => firstDoseShots)),
       secondShots: sum(shots.map(({ secondDoseShots }) => secondDoseShots)),
