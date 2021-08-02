@@ -42,13 +42,13 @@ type ParsedThlAgeGroupResponseEntry = {
   shots: number
 }
 
-export type ShotHistory = Pick<ParsedThlAreaResponseEntry, 'area' | 'date'> & {
+export type ShotHistory = Pick<ParsedThlAreaResponseEntry, 'date'> & {
   firstDoseShots: number
   secondDoseShots: number
 }
 
 export type ThlAreaAdministrations = {
-  area: string
+  areaName: string
   totalFirstDoseShots: number
   totalSecondDoseShots: number
   shotHistory: ShotHistory[]
@@ -60,33 +60,32 @@ export type ThlAgeGroupAdministrations = {
   secondDoseShots: number
 }
 
-const parseAreasResponse: (
-  v: ParsedThlAreaResponseEntry[]
-) => ThlAreaAdministrations[] = R.pipe(
-  (v: ParsedThlAreaResponseEntry[]) => v.filter(a => a.area !== 'Finland'),
-  R.groupBy(a => a.area),
-  R.mapObjIndexed(list => {
-    const grpByDose = R.groupBy(e => String(e.dose), list)
-    const [dose1, dose2] = R.values(grpByDose)
-    return {
-      area: list[0].area,
-      totalFirstDoseShots: R.sum(dose1.map(i => i.shots)),
-      totalSecondDoseShots: R.sum(dose2.map(i => i.shots)),
-      shotHistory: R.zipWith(
-        (d1, d2) => ({
-          area: d1.area,
-          date: d1.date,
-          firstDoseShots: d1.shots,
-          secondDoseShots: d2.shots,
-        }),
-        dose1,
-        dose2
-      ),
-    }
-  }),
-  R.values,
-  R.flatten
-)
+const parseAreasResponse: (v: ParsedThlAreaResponseEntry[]) => ThlAreaAdministrations[] =
+  R.pipe(
+    (v: ParsedThlAreaResponseEntry[]) => v.filter(a => a.area !== 'Finland'),
+    R.groupBy(a => a.area),
+    R.mapObjIndexed(list => {
+      const grpByDose = R.groupBy(e => String(e.dose), list)
+      const [dose1, dose2] = R.values(grpByDose)
+      return {
+        areaName: list[0].area,
+        totalFirstDoseShots: R.sum(dose1.map(i => i.shots)),
+        totalSecondDoseShots: R.sum(dose2.map(i => i.shots)),
+        shotHistory: R.zipWith(
+          (d1, d2) => ({
+            area: d1.area,
+            date: d1.date,
+            firstDoseShots: d1.shots,
+            secondDoseShots: d2.shots,
+          }),
+          dose1,
+          dose2
+        ),
+      }
+    }),
+    R.values,
+    R.flatten
+  )
 
 const parseAgeGroupReponse: (
   input: ParsedThlAgeGroupResponseEntry[]

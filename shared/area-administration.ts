@@ -17,7 +17,7 @@ export type Summary = {
   totalFirstDoseShots: number
   totalSecondDoseShots: number
   areas: Array<
-    Pick<AreaAdministration, 'areaId' | 'areaName'> & {
+    Pick<AreaAdministration, 'areaName'> & {
       areaFirstDoseShots: number
       areaSecondDoseShots: number
     }

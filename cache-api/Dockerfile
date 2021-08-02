@@ -1,4 +1,4 @@
-FROM arm64v8/node:14-alpine
+FROM public.ecr.aws/lambda/nodejs:14
 
 WORKDIR /app/cache-api
 

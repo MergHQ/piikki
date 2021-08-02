@@ -1,10 +1,8 @@
-import { Request, Response } from 'express'
-import { TaskEither } from 'fp-ts/TaskEither'
-import { fold } from 'fp-ts/Either'
+import { findFirst } from 'fp-ts/lib/Array'
 import { pipe } from 'fp-ts/lib/function'
-import { map, fromNullable, getOrElse } from 'fp-ts/Option'
+import * as O from 'fp-ts/Option'
 
-export type ErrorName = 'DbError' | 'DataSyncError' | 'ThlApiError'
+export type ErrorName = 'DbError' | 'DataSyncError' | 'ThlApiError' | 'S3PutError'
 
 type PiikkiError = {
   errorName: ErrorName
@@ -28,29 +26,26 @@ const errors: PiikkiError[] = [
     message: 'Error fetching data from THL api',
     status: 500,
   },
+  {
+    errorName: 'S3PutError',
+    message: 'Unable to put object to S3',
+    status: 500,
+  },
 ]
 
-export const passError = (name: ErrorName) => (e: Error): ErrorName => {
-  console.error(e)
-  return name
-}
+export const passError =
+  (name: ErrorName) =>
+  (e: Error): ErrorName => {
+    console.error(e)
+    return name
+  }
 
-export const doTaskEither = <T>(
-  task: TaskEither<ErrorName, T>,
-  successMessage?: string
-) => (_: Request, res: Response): void => {
-  task().then(
-    fold(
-      eName =>
-        pipe(
-          fromNullable(errors.find(({ errorName }) => eName === errorName)),
-          map(({ message, status }) => ({ message, status })),
-          getOrElse(() => ({ message: 'Internal server error', status: 500 })),
-          ({ status, message }) => {
-            res.status(status).json({ message })
-          }
-        ),
-      successfulResult => res.json(successfulResult || { message: successMessage })
+export const logError = (err: ErrorName) =>
+  pipe(
+    errors,
+    findFirst(e => e.errorName === err),
+    O.fold(
+      () => console.error('Uknown error happened'),
+      err => console.error(`[${err.errorName}] ${err.message}`)
     )
   )
-}
