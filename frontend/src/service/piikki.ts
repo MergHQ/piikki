@@ -12,7 +12,7 @@ export const getSummary = (): Promise<Summary | null> =>
   client.get<Summary>('/administrations/summary').then(res => res.data)
 
 export const getAreaAdministrations = () =>
-  client.get<AreaAdministration[]>('/administrations').then(res => res.data)
+  client.get<AreaAdministration[]>('/administrations/areas').then(res => res.data)
 
 export const getAgeGroupAdministrations = () =>
   client.get<AgeGroupAdministration[]>('/administrations/ageGroups').then(res => res.data)
