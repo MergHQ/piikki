@@ -1,15 +1,15 @@
 FROM public.ecr.aws/lambda/nodejs:14
 
-WORKDIR /app/cache-api
+WORKDIR /app/sync
 
-COPY ./cache-api/src /app/cache-api/src
-COPY ./cache-api/package.json /app/cache-api/package.json
-COPY ./cache-api/tsconfig.json /app/cache-api/tsconfig.json
-COPY ./cache-api/yarn.lock /app/cache-api/yarn.lock
+COPY ./sync/src /app/sync/src
+COPY ./sync/package.json /app/sync/package.json
+COPY ./sync/tsconfig.json /app/sync/tsconfig.json
+COPY ./sync/yarn.lock /app/sync/yarn.lock
 COPY ./shared /app/shared
 
 RUN npm install -g yarn
 RUN yarn install
 RUN yarn build
 
-CMD ["dist.cache-api.src.app.handler"]
+CMD ["dist.sync.src.app.handler"]

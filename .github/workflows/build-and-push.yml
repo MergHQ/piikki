@@ -18,13 +18,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: eu-west-1
 
-      - name: Login to ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
       - name: Build docker image
         env:
           ECR_URL: ${{ secrets.ECR_URL }}
         run: docker build -f ./sync/Dockerfile -t $ECR_URL/piikki-sync:latest .
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v1
 
       - name: Push image
         env:
