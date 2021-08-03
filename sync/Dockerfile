@@ -12,4 +12,4 @@ RUN npm install -g yarn
 RUN yarn install
 RUN yarn build
 
-CMD ["dist.sync.src.app.handler"]
+CMD ["dist/sync/src/app.handler"]
