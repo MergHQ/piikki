@@ -8,7 +8,8 @@ COPY ./cache-api/tsconfig.json /app/cache-api/tsconfig.json
 COPY ./cache-api/yarn.lock /app/cache-api/yarn.lock
 COPY ./shared /app/shared
 
+RUN npm install -g yarn
 RUN yarn install
 RUN yarn build
 
-CMD ["yarn", "start"]
+CMD ["dist.cache-api.src.app.handler"]

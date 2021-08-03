@@ -4,9 +4,9 @@ Apps for reporting COVID-19 vaccination status in finland.
 
 ## Projects
 
-### cache-api
+### sync
 
-A backend for caching results from the original API.
+Syncing script.
 
 ### frontend
 
