@@ -1,4 +1,4 @@
-import { h } from 'harmaja'
+import { Fragment, h, HarmajaOutput } from 'harmaja'
 import { AreaAdministration } from '../../../shared/area-administration'
 import { ChartData } from 'chart.js'
 import { getWithIdx } from './chart-colors'
@@ -38,7 +38,9 @@ const options = {
   },
 }
 
-const toChartData = FS.map<AreaAdministration[], ChartData>(administrations => {
+type ChartDatas = { dose1: ChartData; dose2: ChartData }
+
+const toChartData = FS.map<AreaAdministration[], ChartDatas>(administrations => {
   const labels = R.pipe(
     administrations,
     R.flatMap(({ shotHistory }) => shotHistory),
@@ -47,13 +49,24 @@ const toChartData = FS.map<AreaAdministration[], ChartData>(administrations => {
   )
 
   return {
-    labels,
-    datasets: administrations.map(({ shotHistory, areaName }, i) => ({
-      label: areaName,
-      data: shotHistory.map(({ firstDoseShots }) => firstDoseShots),
-      backgroundColor: getWithIdx(i),
-      borderWidth: 0,
-    })),
+    dose1: {
+      labels,
+      datasets: administrations.map(({ shotHistory, areaName }, i) => ({
+        label: areaName,
+        data: shotHistory.map(({ firstDoseShots }) => firstDoseShots),
+        backgroundColor: getWithIdx(i),
+        borderWidth: 0,
+      })),
+    },
+    dose2: {
+      labels,
+      datasets: administrations.map(({ shotHistory, areaName }, i) => ({
+        label: areaName,
+        data: shotHistory.map(({ secondDoseShots }) => secondDoseShots),
+        backgroundColor: getWithIdx(i),
+        borderWidth: 0,
+      })),
+    },
   }
 })
 
@@ -112,10 +125,18 @@ const WeekSelector = () => (
   </div>
 )
 
+export const renderCharts = ({ dose1, dose2 }: ChartDatas) => (
+  <div>
+    <h3 className="data-container__subtitle">First dose</h3>
+    <Bar data={dose1} options={options} />
+    <h3 className="data-container__subtitle">Second dose</h3>
+    <Bar data={dose2} options={options} />
+  </div>
+)
+
 export default ({ administrations }: Props) => (
   <div className="data-container">
     <h2 className="data-container__title">Daily vaccinations administered per area</h2>
-    <p>Only first dose</p>
     <WeekSelector />
     {L.combineTemplate({
       administrationsStatus: administrations,
@@ -123,11 +144,11 @@ export default ({ administrations }: Props) => (
     }).pipe(
       L.map<Combined, FS.FetchStatus<AreaAdministration[]>>(applyWeekFilter),
       L.map(toChartData),
-      L.map(
+      L.map<FS.FetchStatus<ChartDatas>, HarmajaOutput>(
         FS.fold(
           () => <LoadingSpinner />,
           () => <p>Error loading data.</p>,
-          data => <Bar data={data} options={options} />
+          renderCharts
         )
       )
     )}

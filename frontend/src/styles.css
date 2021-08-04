@@ -29,6 +29,11 @@ body {
   font-size: 32px;
 }
 
+.data-container__subtitle {
+  text-align: center;
+  margin: 2em;
+}
+
 .doughnut-chart-container {
   max-width: 400px;
 }
